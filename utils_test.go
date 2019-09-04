@@ -14,7 +14,7 @@ func Test_convertName(t *testing.T) {
 		{
 			"TestUnderscores",
 			args{"widgets_getPages_response"},
-			"WidgetsGetPagesResponse",
+			"WidgetsGetPages",
 		},
 	}
 	for _, tt := range tests {

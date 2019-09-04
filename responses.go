@@ -68,14 +68,15 @@ type responsesDefinition struct {
 // Array response items
 // Response property fields
 type schemaPrimitive struct {
-	Type        string `json:"type"`
-	Description string `json:"description,omitempty"`
+	Type            string `json:"type"`
+	Description     string `json:"description,omitempty"`
+	BuiltinTypeName string `json:"-"`
 }
 
 func (s schemaPrimitive) GetGoType() string {
 	switch s.Type {
 	case R_TYPE_BUILTIN:
-		return s.Description
+		return s.BuiltinTypeName
 	case R_TYPE_INT:
 		return "int"
 	case R_TYPE_STRING:
@@ -90,11 +91,7 @@ func (s schemaPrimitive) GetGoType() string {
 }
 
 func (s schemaPrimitive) GetDescription() string {
-	if s.Type != R_TYPE_BUILTIN {
-		return s.Description
-	}
-
-	return ""
+	return s.Description
 }
 
 func (s schemaPrimitive) IsString() bool {
@@ -138,7 +135,8 @@ func (s *schemaPrimitive) UnmarshalJSON(b []byte) error {
 				s.Description = fmt.Sprintf("%s", tmp["description"])
 			} else if v, ok := tmp["$ref"]; ok {
 				s.Type = R_TYPE_BUILTIN
-				s.Description = getObjectTypeName(fmt.Sprintf("%s", v))
+				s.Description = fmt.Sprintf("%s", tmp["description"])
+				s.BuiltinTypeName = getObjectTypeName(fmt.Sprintf("%s", v))
 			}
 		case []interface{}:
 			s.Type = R_TYPE_INTERFACE
@@ -183,7 +181,7 @@ func (s schemaWrapper) GetGoType() string {
 
 func (s schemaWrapper) GetDescription() string {
 	switch s.SchemaType {
-	case TYPE_INT, TYPE_STRING:
+	case TYPE_INT, TYPE_STRING, TYPE_BOOLEAN, TYPE_BUILTIN:
 		return s.SchemaPrimitive.GetDescription()
 	}
 
@@ -269,7 +267,14 @@ func (r propertyWrapper) GetGoType() string {
 }
 
 func (r propertyWrapper) GetDescription() string {
-	panic("implement me")
+	switch r.PropertyType {
+	case TYPE_ARRAY:
+		return ""
+	case TYPE_INT, TYPE_BUILTIN, TYPE_STRING, TYPE_BOOLEAN:
+		return r.PropertyPrimitive.GetDescription()
+	}
+
+	return "UNKNOWN"
 }
 
 func (r propertyWrapper) IsString() bool {

@@ -1,11 +1,11 @@
 {{range $key, $value := . -}}
 // {{convertName $key}} type represents `{{$key}}` API response object
 {{if or $value.Properties.Response.IsInt $value.Properties.Response.IsString $value.Properties.Response.IsBuiltin $value.Properties.Response.IsArray -}}
-type {{convertName $key}} {{$value.Properties.Response.GetGoType}}
+type {{convertName $key}} {{$value.Properties.Response.GetGoType}} {{ if (len $value.Properties.Response.GetDescription) gt 0}}// {{$value.Properties.Response.GetDescription}}{{end}}
 {{else if $value.Properties.Response.IsObject -}}
 type {{convertName $key}} struct {
 {{range $ok, $ov := $value.Properties.Response.PropertyObject.Properties -}}
-	{{ printf "\t%s %s" (convertName $ok) ($ov.GetGoType) }}
+	{{ printf "\t%s\t%s  `json:\"%s\"`" (convertName $ok) ($ov.GetGoType) ($ok) }} {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}} {{end}}
 {{end -}}
 }
 {{end}}
