@@ -1,0 +1,10 @@
+package responses
+// WARNING! AUTOMATICALLY GENERATED CONTENT! DON'T CHANGE!
+// Source schema can be found at https://github.com/VKCOM/vk-api-schema/blob/master/responses.json
+
+import "gitlab.com/Burmuley/go-vkapi/objects"
+
+/////////////////////////////////////////////////////////////
+// `{{.}}` group of responses
+/////////////////////////////////////////////////////////////
+

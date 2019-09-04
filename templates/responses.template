@@ -1,0 +1,12 @@
+{{range $key, $value := . -}}
+// {{convertName $key}} type represents `{{$key}}` API response object
+{{if or $value.Properties.Response.IsInt $value.Properties.Response.IsString $value.Properties.Response.IsBuiltin $value.Properties.Response.IsArray -}}
+type {{convertName $key}} {{$value.Properties.Response.GetGoType}}
+{{else if $value.Properties.Response.IsObject -}}
+type {{convertName $key}} struct {
+{{range $ok, $ov := $value.Properties.Response.PropertyObject.Properties -}}
+	{{ printf "\t%s %s" (convertName $ok) ($ov.GetGoType) }}
+{{end -}}
+}
+{{end}}
+{{end -}}
