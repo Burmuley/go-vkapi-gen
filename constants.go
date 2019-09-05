@@ -9,7 +9,7 @@ const (
 
 	OBJ_DIR_NAME         = "objects"
 	OBJ_HEADER_TMPL_NAME = "templates/objects.header.template"
-	OBJ_TMPL_NAME        = "templates/object.template"
+	OBJ_TMPL_NAME        = "templates/objects.template"
 )
 
 // Responses type constants
@@ -25,11 +25,11 @@ const (
 
 // Response types (string option)
 const (
-	R_TYPE_INT       string = "integer"
-	R_TYPE_STRING    string = "string"
-	R_TYPE_ARRAY     string = "array"
-	R_TYPE_OBJECT    string = "object"
-	R_TYPE_BUILTIN   string = "builtin"
-	R_TYPE_BOOLEAN   string = "boolean"
-	R_TYPE_INTERFACE string = "interface"
+	SCHEMA_TYPE_INT       string = "integer"
+	SCHEMA_TYPE_STRING    string = "string"
+	SCHEMA_TYPE_ARRAY     string = "array"
+	SCHEMA_TYPE_OBJECT    string = "object"
+	SCHEMA_TYPE_BUILTIN   string = "builtin"
+	SCHEMA_TYPE_BOOLEAN   string = "boolean"
+	SCHEMA_TYPE_INTERFACE string = "interface"
 )

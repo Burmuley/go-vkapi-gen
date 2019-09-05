@@ -1,11 +1,11 @@
 package main
 
-type responseTyper interface {
+type schemaTyper interface {
 	GetGoType() string
 	GetDescription() string
 }
 
-type responseTypeChecker interface {
+type schemaTypeChecker interface {
 	IsString() bool
 	IsInt() bool
 	IsBuiltin() bool
@@ -13,4 +13,13 @@ type responseTypeChecker interface {
 	IsObject() bool
 	IsBoolean() bool
 	IsInterface() bool
+}
+
+type schemaTyperChecker interface {
+	schemaTyper
+	schemaTypeChecker
+}
+
+type schemaProperty interface {
+	GetProperties() map[string]propertyWrapper
 }

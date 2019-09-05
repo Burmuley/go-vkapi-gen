@@ -27,25 +27,8 @@ func getApiNamePrefix(name string) string {
 	return strings.Split(name, "_")[0]
 }
 
-func makeDefinitionsMap(definitions map[string]responsesDefinition) map[string]map[string]responsesDefinition {
-	defMap := make(map[string]map[string]responsesDefinition)
-
-	for k, v := range definitions {
-		pref := getApiNamePrefix(k)
-
-		if _, ok := defMap[pref]; ok {
-			defMap[pref][k] = v
-		} else {
-			defMap[pref] = make(map[string]responsesDefinition)
-			defMap[pref][k] = v
-		}
-	}
-
-	return defMap
-}
-
-// readSchemaFile: reads VK API schema file from HTTP URL and saves it locally in the working directory
-func readSchemaFile(fileUrl string) ([]byte, error) {
+// readHTTPSchemaFile: reads VK API schema file from HTTP URL and saves it locally in the working directory
+func readHTTPSchemaFile(fileUrl string) ([]byte, error) {
 	var schemaFile []byte
 
 	httpResp, err := http.Get(fileUrl)
@@ -66,6 +49,14 @@ func readSchemaFile(fileUrl string) ([]byte, error) {
 
 func readLocalSchemaFile(filePath string) ([]byte, error) {
 	return ioutil.ReadFile(filePath)
+}
+
+func loadSchemaFile(path string) ([]byte, error) {
+	if path[:4] != "http" {
+		return readLocalSchemaFile(path)
+	}
+
+	return readHTTPSchemaFile(path)
 }
 
 func checkErr(err error) {
