@@ -30,20 +30,12 @@ type schemaPrimitive struct {
 }
 
 func (s schemaPrimitive) GetGoType() string {
-	switch s.Type {
-	case SCHEMA_TYPE_BUILTIN:
+
+	if s.Type == SCHEMA_TYPE_BUILTIN {
 		return s.BuiltinTypeName
-	case SCHEMA_TYPE_INT:
-		return "int"
-	case SCHEMA_TYPE_STRING:
-		return "string"
-	case SCHEMA_TYPE_BOOLEAN:
-		return "bool"
-	case SCHEMA_TYPE_INTERFACE:
-		return "interface{}"
 	}
 
-	return "UNKNOWN"
+	return detectGoType(s.Type)
 }
 
 func (s schemaPrimitive) GetDescription() string {
@@ -226,7 +218,7 @@ func (r propertyWrapper) GetGoType() string {
 	switch r.PropertyType {
 	case TYPE_ARRAY:
 		return r.PropertyArray.GetGoType()
-	case TYPE_INT, TYPE_BUILTIN, TYPE_STRING, TYPE_BOOLEAN:
+	case TYPE_INT, TYPE_BUILTIN, TYPE_STRING, TYPE_BOOLEAN, TYPE_NUMBER:
 		return r.PropertyPrimitive.GetGoType()
 	}
 

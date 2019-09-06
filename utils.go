@@ -66,7 +66,19 @@ func checkErr(err error) {
 }
 
 func getObjectTypeName(s string) string {
-	str := strings.Split(s, "/")
-	return strings.Join([]string{"objects", convertName(str[len(str)-1])}, ".")
+	var prefix string
 
+	p := strings.Split(s, "#")
+
+	if len(p[0]) > 0 {
+		prefix = strings.Split(p[0], ".")[0]
+	}
+
+	str := strings.Split(s, "/")
+
+	if len(prefix) == 0 {
+		return convertName(str[len(str)-1])
+	}
+
+	return strings.Join([]string{prefix, convertName(str[len(str)-1])}, ".")
 }

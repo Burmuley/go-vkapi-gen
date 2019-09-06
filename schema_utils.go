@@ -12,9 +12,6 @@ import (
 )
 
 func parseSchemaJSON(b []byte, wrapper interface{}) error {
-	//tmp := &struct {
-	//    Type string `json:"type"`
-	//}{}
 	tmp := &struct {
 		Type interface{} `json:"type"`
 	}{}
@@ -55,17 +52,31 @@ func parseSchemaJSON(b []byte, wrapper interface{}) error {
 	return nil
 }
 
+func checkFileExists(f string) bool {
+	_, err := os.Stat(f)
+	return !os.IsExist(err)
+}
+
 func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, prefix, dir, headerTmpl, bodyTmpl string) {
 	var (
 		f   *os.File
 		err error
 	)
 
+	fName := filepath.Join(OUTPUT_DIR_NAME, dir, fmt.Sprintf("%s.go", prefix))
+
+	// Check if a target file exists and remove it if so
+	if checkFileExists(fName) {
+		if err := os.Remove(fName); err != nil {
+			log.Fatal(fmt.Sprintf("file '%s' exists and can't be removed! Error: %s", fName, err))
+			return
+		}
+
+		log.Printf("removed file: %s", fName)
+	}
+
 	// Open new file
-	if f, err = os.OpenFile(
-		filepath.Join(OUTPUT_DIR_NAME, dir, fmt.Sprintf("%s.go", prefix)),
-		os.O_CREATE|os.O_RDWR|os.O_SYNC,
-		0644); err != nil {
+	if f, err = os.OpenFile(fName, os.O_CREATE|os.O_RDWR|os.O_SYNC, 0644); err != nil {
 		log.Fatal(err)
 		return
 	}
@@ -101,4 +112,21 @@ func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, pre
 			return
 		}
 	}
+}
+
+func detectGoType(s string) string {
+	switch s {
+	case SCHEMA_TYPE_NUMBER:
+		return "float64"
+	case SCHEMA_TYPE_INTERFACE:
+		return "interface{}"
+	case SCHEMA_TYPE_INT:
+		return "int"
+	case SCHEMA_TYPE_BOOLEAN:
+		return "bool"
+	case SCHEMA_TYPE_STRING:
+		return "string"
+	}
+
+	return s
 }

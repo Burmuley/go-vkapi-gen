@@ -1,5 +1,5 @@
 {{range $key, $value := . -}}
-// {{convertName $key}} type represents `{{$key}}` API response object
+// {{convertName $key}} type represents `{{$key}}` API object
 {{if or $value.IsInt $value.IsString $value.IsBuiltin $value.IsArray -}}
 type {{convertName $key}} {{$value.GetGoType}} {{ if (len $value.GetDescription) gt 0}}// {{$value.GetDescription}}{{end}}
 {{else if $value.IsObject -}}

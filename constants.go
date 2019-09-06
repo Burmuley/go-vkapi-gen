@@ -21,6 +21,7 @@ const (
 	TYPE_OBJECT
 	TYPE_BOOLEAN
 	TYPE_INTERFACE
+	TYPE_NUMBER
 )
 
 // Response types (string option)
@@ -32,4 +33,6 @@ const (
 	SCHEMA_TYPE_BUILTIN   string = "builtin"
 	SCHEMA_TYPE_BOOLEAN   string = "boolean"
 	SCHEMA_TYPE_INTERFACE string = "interface"
+	SCHEMA_TYPE_NUMBER    string = "number"
+	SCHEMA_TYPE_UNKNOWN   string = "UNKNOWN"
 )

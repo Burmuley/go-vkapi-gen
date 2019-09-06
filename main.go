@@ -12,7 +12,7 @@ var (
 		"VK_API_SCHEMA_METHODS":   "https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/methods.json",
 		"VK_API_SCHEMA_RESPONSES": "https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/responses.json",
 		"RESPONSES_LOCAL":         "/Users/burmuley/go/src/github.com/vk-api-schema/test_min.json",
-		"OBJECTS_LOCAL":           "/Users/burmuley/go/src/github.com/vk-api-schema/obj_test.json",
+		"OBJECTS_LOCAL":           "/Users/burmuley/go/src/github.com/vk-api-schema/obj_test_min.json",
 	}
 )
 

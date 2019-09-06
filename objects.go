@@ -49,7 +49,7 @@ func (o objectsDefinition) GetProperties() map[string]propertyWrapper {
 }
 
 func (o objectsDefinition) GetGoType() string {
-	return o.Type
+	return detectGoType(o.Type)
 }
 
 func (o objectsDefinition) GetDescription() string {
