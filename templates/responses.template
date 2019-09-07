@@ -5,7 +5,7 @@ type {{convertName $key}} {{$value.Properties.Response.GetGoType}} {{ if (len $v
 {{else if $value.Properties.Response.IsObject -}}
 type {{convertName $key}} struct {
 {{range $ok, $ov := $value.Properties.Response.PropertyObject.Properties -}}
-	{{ printf "\t%s\t%s  `json:\"%s\"`" (convertName $ok) ($ov.GetGoType) ($ok) }} {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}} {{end}}
+	{{ printf "\t%s\t%s  `json:\"%s\"`" (convertName $ok) ($ov.GetGoType) ($ok) }} {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}}{{end}}
 {{end -}}
 }
 {{end}}
