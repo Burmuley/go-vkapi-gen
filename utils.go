@@ -27,25 +27,8 @@ func getApiNamePrefix(name string) string {
 	return strings.Split(name, "_")[0]
 }
 
-func makeDefinitionsMap(definitions map[string]responsesDefinition) map[string]map[string]responsesDefinition {
-	defMap := make(map[string]map[string]responsesDefinition)
-
-	for k, v := range definitions {
-		pref := getApiNamePrefix(k)
-
-		if _, ok := defMap[pref]; ok {
-			defMap[pref][k] = v
-		} else {
-			defMap[pref] = make(map[string]responsesDefinition)
-			defMap[pref][k] = v
-		}
-	}
-
-	return defMap
-}
-
-// readSchemaFile: reads VK API schema file from HTTP URL and saves it locally in the working directory
-func readSchemaFile(fileUrl string) ([]byte, error) {
+// readHTTPSchemaFile: reads VK API schema file from HTTP URL and saves it locally in the working directory
+func readHTTPSchemaFile(fileUrl string) ([]byte, error) {
 	var schemaFile []byte
 
 	httpResp, err := http.Get(fileUrl)
@@ -68,6 +51,14 @@ func readLocalSchemaFile(filePath string) ([]byte, error) {
 	return ioutil.ReadFile(filePath)
 }
 
+func loadSchemaFile(path string) ([]byte, error) {
+	if path[:4] != "http" {
+		return readLocalSchemaFile(path)
+	}
+
+	return readHTTPSchemaFile(path)
+}
+
 func checkErr(err error) {
 	if err != nil {
 		log.Fatal(err)
@@ -75,7 +66,19 @@ func checkErr(err error) {
 }
 
 func getObjectTypeName(s string) string {
-	str := strings.Split(s, "/")
-	return strings.Join([]string{"objects", convertName(str[len(str)-1])}, ".")
+	var prefix string
 
+	p := strings.Split(s, "#")
+
+	if len(p[0]) > 0 {
+		prefix = strings.Split(p[0], ".")[0]
+	}
+
+	str := strings.Split(s, "/")
+
+	if len(prefix) == 0 {
+		return convertName(str[len(str)-1])
+	}
+
+	return strings.Join([]string{prefix, convertName(str[len(str)-1])}, ".")
 }
