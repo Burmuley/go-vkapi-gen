@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"go/format"
 	"log"
 	"os"
 	"path/filepath"
@@ -53,15 +55,18 @@ func parseSchemaJSON(b []byte, wrapper interface{}) error {
 }
 
 func checkFileExists(f string) bool {
-	_, err := os.Stat(f)
-	return !os.IsExist(err)
+	finf, _ := os.Stat(f)
+	return finf != nil
 }
 
 func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, prefix, dir, headerTmpl, bodyTmpl string) {
 	var (
 		f   *os.File
 		err error
+		buf bytes.Buffer
 	)
+
+	defer wg.Done()
 
 	fName := filepath.Join(OUTPUT_DIR_NAME, dir, fmt.Sprintf("%s.go", prefix))
 
@@ -82,11 +87,10 @@ func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, pre
 	}
 
 	defer f.Close()
-	defer wg.Done()
 
 	// Render header and write to the file
 	tmpl, err := template.New(strings.Split(headerTmpl, "/")[1]).ParseFiles(headerTmpl)
-	err = tmpl.Execute(f, prefix)
+	err = tmpl.Execute(&buf, prefix)
 
 	// Read responses definitions from channel and append to the file
 	funcs := make(map[string]interface{})
@@ -99,16 +103,23 @@ func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, pre
 			tmpl, err := template.New(strings.Split(bodyTmpl, "/")[1]).Funcs(funcs).ParseFiles(bodyTmpl)
 
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 				return
 			}
 
-			err = tmpl.Execute(f, d)
+			err = tmpl.Execute(&buf, d)
 
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
 		} else {
+			bb := buf.Bytes()
+			if fmtCode, err := format.Source(bb); err != nil {
+				log.Printf("[[%s]] error formatting code: %s", prefix, err)
+			} else {
+				f.Write(fmtCode)
+			}
+
 			return
 		}
 	}
