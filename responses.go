@@ -7,7 +7,8 @@ import (
 )
 
 type responsesSchema struct {
-	Definitions map[string]responsesDefinition `json:"definitions"`
+	//Definitions map[string]responsesDefinition `json:"definitions"`
+	Definitions map[string]schemaJSONProperty `json:"definitions"`
 }
 
 type responsesDefinition struct {

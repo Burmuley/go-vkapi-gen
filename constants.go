@@ -36,3 +36,5 @@ const (
 	SCHEMA_TYPE_NUMBER    string = "number"
 	SCHEMA_TYPE_UNKNOWN   string = "UNKNOWN"
 )
+
+//const ()

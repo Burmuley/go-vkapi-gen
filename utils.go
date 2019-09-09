@@ -82,3 +82,11 @@ func getObjectTypeName(s string) string {
 
 	return strings.Join([]string{prefix, convertName(str[len(str)-1])}, ".")
 }
+
+func logString(s string) {
+	log.Println(s)
+}
+
+func logJSONError(err error) {
+	logString(fmt.Sprintf("JSON Error:%#v\n", err))
+}
