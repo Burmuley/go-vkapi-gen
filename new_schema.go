@@ -28,7 +28,7 @@ func (s *schemaTypeWrapper) UnmarshalJSON(b []byte) error {
 	switch tmp.(type) {
 	case string:
 		s.Type = fmt.Sprintf("%s", tmp)
-	case []string:
+	case []interface{}:
 		s.Type = SCHEMA_TYPE_INTERFACE
 	}
 
@@ -40,11 +40,13 @@ type schemaItemsWrapper struct {
 	ItemsArr []*schemaJSONProperty `json:"-"`
 }
 
-func (s *schemaItemsWrapper) GetGoType() string {
+func (s *schemaItemsWrapper) GetGoType() (tmp []string) {
 	if s.Items != nil {
-		return fmt.Sprintf("[]%s", s.Items.GetGoType())
+		tmp = append(tmp, fmt.Sprintf("[]%s", s.Items.GetGoType()))
+		return tmp
 	} else {
-		return "[]interface{}"
+		tmp = append(tmp, "[]interface{}")
+		return tmp
 	}
 }
 
@@ -95,16 +97,18 @@ func (s schemaJSONProperty) GetType() string {
 	return "<<< UNKNOWN >>>"
 }
 
-func (s schemaJSONProperty) GetGoType() string {
+func (s schemaJSONProperty) GetGoType() (tmp []string) {
 	if len(s.Ref) > 0 {
-		return getObjectTypeName(s.Ref)
+		tmp = append(tmp, getObjectTypeName(s.Ref))
+		return tmp
 	}
 
 	if fmt.Sprint(s.Type) == SCHEMA_TYPE_ARRAY {
 		return s.Items.GetGoType()
 	}
 
-	return detectGoType(fmt.Sprintf("%s", s.Type))
+	tmp = append(tmp, detectGoType(fmt.Sprintf("%s", s.Type)))
+	return tmp
 }
 
 func (s schemaJSONProperty) GetDescription() string {

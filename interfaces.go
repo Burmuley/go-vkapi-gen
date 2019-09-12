@@ -1,7 +1,7 @@
 package main
 
 type schemaTyper interface {
-	GetGoType() string
+	GetGoType() []string
 	GetDescription() string
 	GetProperties() map[string]schemaJSONProperty
 }

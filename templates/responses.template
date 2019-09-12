@@ -1,8 +1,21 @@
+{{define "go_type"}}
+    {{- $r := .GetGoType -}}
+    {{- if (len $r) le 1 -}}
+        {{printf " %s `json:\"%s\"`" (index $r 0) -}}
+    {{else -}}
+        {{- print "struct {" -}}
+        {{- range $t := $r -}}
+            {{ printf "\t%s\t  `json:\"%s\"`" $t -}}
+        {{end -}}
+        {{print "}" -}}
+    {{end -}}
+{{end}}
 {{range $key, $value := . -}}
 // {{convertName $key}} type represents `{{$key}}` API response object
 {{ $response := (index $value.Properties "response") -}}
-{{if or $response.IsInt $response.IsString $response.IsBuiltin $response.IsArray $response.IsNumber -}}
-type {{convertName $key}} {{$response.GetGoType}} {{ if (len $response.GetDescription) gt 0}}// {{$response.GetDescription}}{{end}}
+{{if or $response.IsInt $response.IsString $response.IsBuiltin $response.IsArray $response.IsNumber $response.IsInterface -}}
+type {{convertName $key -}}{{template "go_type" $response}}
+{{- if (len $response.GetDescription) gt 0}} // {{$response.GetDescription}}{{end}}
 {{else if $response.IsObject -}}
 type {{convertName $key}} struct {
 {{range $ok, $ov := $response.GetProperties -}}

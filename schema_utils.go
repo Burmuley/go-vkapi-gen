@@ -115,7 +115,8 @@ func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, pre
 		} else {
 			bb := buf.Bytes()
 			if fmtCode, err := format.Source(bb); err != nil {
-				log.Printf("[[%s]] error formatting code: %s", prefix, err)
+				log.Printf("[[%s.go]] error formatting code: %s. Writing code as is...", prefix, err)
+				f.Write(bb)
 			} else {
 				f.Write(fmtCode)
 			}
