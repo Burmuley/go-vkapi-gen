@@ -79,9 +79,10 @@ type schemaJSONProperty struct {
 	Type       schemaTypeWrapper              `json:"type,omitempty"`
 	Descr      string                         `json:"description,omitempty"`
 	AllOf      []*schemaJSONProperty          `json:"allOf,omitempty"`
+	OneOf      []*schemaJSONProperty          `json:"oneOf,omitempty"`
 	Properties map[string]*schemaJSONProperty `json:"properties,omitempty"`
 	Required   []string                       `json:"required,omitempty"`
-	Enum       []interface{}                  `json:"enum,omitempty"` // TODO: make a wrapper (can be int of string)
+	Enum       []interface{}                  `json:"enum,omitempty"` // TODO: make a wrapper (can be int or string)
 	EnumNames  []string                       `json:"enum_names,omitempty"`
 	Items      *schemaItemsWrapper            `json:"items,omitempty"`
 	Ref        string                         `json:"$ref,omitempty"`
@@ -91,7 +92,7 @@ func (s schemaJSONProperty) GetType() string {
 	if len(fmt.Sprint(s.Type)) > 0 {
 		return fmt.Sprint(s.Type)
 	} else {
-		if len(s.AllOf) > 0 || len(s.Properties) > 0 {
+		if len(s.AllOf) > 0 || len(s.OneOf) > 0 || len(s.Properties) > 0 {
 			return SCHEMA_TYPE_OBJECT
 		} else if len(s.Ref) > 0 {
 			return SCHEMA_TYPE_BUILTIN
