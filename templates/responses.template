@@ -2,7 +2,7 @@
     {{- $r := .GetGoType -}}
     {{- $l := len .GetGoType -}}
     {{- if le $l 1 -}}
-        {{printf " %s " ( printf "%s" (index $r 0)) -}}
+        {{printf "%s " ( printf "%s" (index $r 0)) -}}
     {{else -}}
         {{- print "struct {\n" -}}
         {{- range $t := $r -}}
@@ -20,7 +20,7 @@ type {{convertName $key -}}{{template "go_type" $response}}
 {{else if $response.IsObject -}}
 type {{convertName $key}} struct {
 {{range $ok, $ov := $response.GetProperties -}}
-{{print "\t"}}{{convertName $ok}} {{if $ov.IsArray}}[]{{end}}{{template "go_type" $ov}} `json:"{{$ok}}"`  {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}}{{end}}
+
 {{end -}}
 }
 {{end}}

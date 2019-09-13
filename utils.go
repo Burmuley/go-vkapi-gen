@@ -16,6 +16,8 @@ func convertName(jsonName string) string {
 		nameArr = nameArr[:len(nameArr)-1]
 	}
 
+	nameArr[0] = strings.ReplaceAll(nameArr[0], "2", "two")
+
 	for k, v := range nameArr {
 		nameArr[k] = strings.Title(v)
 	}
