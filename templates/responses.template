@@ -1,11 +1,12 @@
 {{define "go_type"}}
     {{- $r := .GetGoType -}}
-    {{- if (len $r) le 1 -}}
-        {{printf " %s `json:\"%s\"`" (index $r 0) -}}
+    {{- $l := len .GetGoType -}}
+    {{- if le $l 1 -}}
+        {{printf " %s " ( printf "%s" (index $r 0)) -}}
     {{else -}}
-        {{- print "struct {" -}}
+        {{- print "struct {\n" -}}
         {{- range $t := $r -}}
-            {{ printf "\t%s\t  `json:\"%s\"`" $t -}}
+            {{ printf "\t\t%s\n" $t -}}
         {{end -}}
         {{print "}" -}}
     {{end -}}
@@ -19,7 +20,7 @@ type {{convertName $key -}}{{template "go_type" $response}}
 {{else if $response.IsObject -}}
 type {{convertName $key}} struct {
 {{range $ok, $ov := $response.GetProperties -}}
-	{{ printf "\t%s\t%s  `json:\"%s\"`" (convertName $ok) ($ov.GetGoType) ($ok) }} {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}}{{end}}
+{{print "\t"}}{{convertName $ok}} {{if $ov.IsArray}}[]{{end}}{{template "go_type" $ov}} `json:"{{$ok}}"`  {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}}{{end}}
 {{end -}}
 }
 {{end}}

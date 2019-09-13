@@ -40,17 +40,21 @@ type schemaItemsWrapper struct {
 	ItemsArr []*schemaJSONProperty `json:"-"`
 }
 
-func (s *schemaItemsWrapper) GetGoType() (tmp []string) {
-	if s.Items != nil {
-		tmp = append(tmp, fmt.Sprintf("[]%s", s.Items.GetGoType()))
+func (s schemaItemsWrapper) GetGoType() (tmp []string) {
+	if s.ItemsArr != nil {
+		tmp = append(tmp, "interface{}")
 		return tmp
-	} else {
-		tmp = append(tmp, "[]interface{}")
+	} else if s.Items != nil {
+		for _, i := range s.Items.GetGoType() {
+			tmp = append(tmp, fmt.Sprintf("%s", i))
+		}
 		return tmp
 	}
+
+	return []string{}
 }
 
-func (s *schemaItemsWrapper) GetDescription() string {
+func (s schemaItemsWrapper) GetDescription() string {
 	return ""
 }
 
@@ -77,7 +81,7 @@ type schemaJSONProperty struct {
 	AllOf      []*schemaJSONProperty          `json:"allOf,omitempty"`
 	Properties map[string]*schemaJSONProperty `json:"properties,omitempty"`
 	Required   []string                       `json:"required,omitempty"`
-	Enum       []int                          `json:"enum,omitempty"` // TODO: make a wrapper (can be int of string)
+	Enum       []interface{}                  `json:"enum,omitempty"` // TODO: make a wrapper (can be int of string)
 	EnumNames  []string                       `json:"enum_names,omitempty"`
 	Items      *schemaItemsWrapper            `json:"items,omitempty"`
 	Ref        string                         `json:"$ref,omitempty"`
@@ -94,10 +98,17 @@ func (s schemaJSONProperty) GetType() string {
 		}
 	}
 
-	return "<<< UNKNOWN >>>"
+	return "<<<UNKNOWN>>>"
 }
 
 func (s schemaJSONProperty) GetGoType() (tmp []string) {
+	if s.AllOf != nil {
+		for _, r := range s.AllOf {
+			tmp = append(tmp, r.GetGoType()...)
+		}
+		return tmp
+	}
+
 	if len(s.Ref) > 0 {
 		tmp = append(tmp, getObjectTypeName(s.Ref))
 		return tmp

@@ -115,10 +115,19 @@ func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, pre
 		} else {
 			bb := buf.Bytes()
 			if fmtCode, err := format.Source(bb); err != nil {
-				log.Printf("[[%s.go]] error formatting code: %s. Writing code as is...", prefix, err)
-				f.Write(bb)
+				log.Printf("[[%s]] error formatting code: %s. Writing code as is...", fName, err)
+				if n, e := f.Write(bb); e != nil {
+					log.Printf("error writing %s: %s", fName, e)
+				} else {
+					log.Printf("successfully written %d bytes (unformatted) to %s.", n, fName)
+				}
 			} else {
-				f.Write(fmtCode)
+				if n, e := f.Write(fmtCode); e != nil {
+					log.Printf("error writing %s: %s", fName, e)
+				} else {
+					log.Printf("successfully written %d bytes to %s", n, fName)
+				}
+
 			}
 
 			return
