@@ -1,6 +1,6 @@
 {{define "go_type"}}
-    {{- $r := .GetGoType -}}
-    {{- $l := len .GetGoType -}}
+    {{- $r := (.GetGoType true) -}}
+    {{- $l := len (.GetGoType true) -}}
     {{- if le $l 1 -}}
         {{printf "%s" ( printf "%s" (index $r 0)) -}}
     {{else -}}
@@ -17,9 +17,9 @@
 type {{convertName $key}} {{template "go_type" $value}}{{ if (len $value.GetDescription) gt 0}} // {{$value.GetDescription}}{{end}}
 {{else if $value.IsObject -}}
 type {{convertName $key -}}
-{{if gt (len $value.GetProperties) 0 -}}
+{{if $value.IsObject -}}
 {{printf " %s" "struct {"}}
-{{range $ok, $ov := $value.GetProperties -}}
+{{range $ok, $ov := ($value.GetProperties true) -}}
 {{print "\t"}}{{convertName $ok}} {{if $ov.IsArray}}[]{{end}}{{template "go_type" $ov}} `json:"{{$ok}}"`  {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}}{{end}}
 {{end -}}
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 //////////////////////////////////////////////////////////////////////
@@ -56,12 +57,12 @@ type schemaItemsWrapper struct {
 	ItemsArr []*schemaJSONProperty `json:"-"`
 }
 
-func (s schemaItemsWrapper) GetGoType() (tmp []string) {
+func (s schemaItemsWrapper) GetGoType(stripPrefix bool) (tmp []string) {
 	if s.ItemsArr != nil {
 		tmp = append(tmp, "interface{}")
 		return tmp
 	} else if s.Items != nil {
-		for _, i := range s.Items.GetGoType() {
+		for _, i := range s.Items.GetGoType(stripPrefix) {
 			tmp = append(tmp, fmt.Sprintf("%s", i))
 		}
 		return tmp
@@ -127,21 +128,30 @@ func (s schemaJSONProperty) GetType() string {
 	return SCHEMA_TYPE_UNKNOWN
 }
 
-func (s schemaJSONProperty) GetGoType() (tmp []string) {
+func (s schemaJSONProperty) GetGoType(stripPrefix bool) (tmp []string) {
 	if s.AllOf != nil {
 		for _, r := range s.AllOf {
-			tmp = append(tmp, r.GetGoType()...)
+			tmp = append(tmp, r.GetGoType(stripPrefix)...)
 		}
 		return tmp
 	}
 
 	if len(s.Ref) > 0 {
-		tmp = append(tmp, getObjectTypeName(s.Ref))
+		var ref string
+
+		if stripPrefix {
+			stripped := strings.Split(s.Ref, "#")
+			ref = strings.Join([]string{"#", stripped[len(stripped)-1]}, "")
+		} else {
+			ref = s.Ref
+		}
+
+		tmp = append(tmp, getObjectTypeName(ref))
 		return tmp
 	}
 
 	if fmt.Sprint(s.Type) == SCHEMA_TYPE_ARRAY {
-		return s.Items.GetGoType()
+		return s.Items.GetGoType(stripPrefix)
 	}
 
 	tmp = append(tmp, detectGoType(fmt.Sprintf("%s", s.Type)))
@@ -152,7 +162,7 @@ func (s schemaJSONProperty) GetDescription() string {
 	return s.Descr
 }
 
-func (s schemaJSONProperty) GetProperties() (tmp map[string]schemaJSONProperty) {
+func (s schemaJSONProperty) GetProperties(stripPrefix bool) (tmp map[string]schemaJSONProperty) {
 	if len(s.AllOf) > 0 || len(s.OneOf) > 0 {
 		var tmpOf []*schemaJSONProperty
 
@@ -166,11 +176,11 @@ func (s schemaJSONProperty) GetProperties() (tmp map[string]schemaJSONProperty) 
 
 		for _, v := range tmpOf {
 			if v.IsBuiltin() {
-				objName := convertName(v.GetGoType()[0])
+				objName := convertName(v.GetGoType(stripPrefix)[0])
 
 				tmp[objName] = *v
 			} else if v.IsObject() {
-				for k, v := range v.GetProperties() {
+				for k, v := range v.GetProperties(stripPrefix) {
 					tmp[k] = v
 				}
 			}

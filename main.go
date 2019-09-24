@@ -39,24 +39,24 @@ func main() {
 
 	//responses, err := loadSchemaFile(VK_SCHEMA_FILES["RESPONSES_LOCAL"])
 
-	//responses, err := loadSchemaFile(VK_SCHEMA_FILES["VK_API_SCHEMA_RESPONSES"])
+	responses, err := loadSchemaFile(VK_SCHEMA_FILES["VK_API_SCHEMA_RESPONSES"])
 	//
 	//if err != nil {
 	//	fmt.Println("Error:", err)
 	//}
 
-	//objects, err := loadSchemaFile(VK_SCHEMA_FILES["VK_API_SCHEMA_OBJECTS"])
-	objects, err := loadSchemaFile(VK_SCHEMA_FILES["OBJECTS_LOCAL"])
+	objects, err := loadSchemaFile(VK_SCHEMA_FILES["VK_API_SCHEMA_OBJECTS"])
+	//objects, err := loadSchemaFile(VK_SCHEMA_FILES["OBJECTS_LOCAL"])
 
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
 
-	//jsonResponses := responsesSchema{}
-	//if err := json.Unmarshal(responses, &jsonResponses); err != nil {
-	//	logJSONError(err)
-	//	return
-	//}
+	jsonResponses := responsesSchema{}
+	if err := json.Unmarshal(responses, &jsonResponses); err != nil {
+		logJSONError(err)
+		return
+	}
 
 	//for k, v := range jsonResponses.Definitions {
 	//	fmt.Println("\n", k)
@@ -71,7 +71,7 @@ func main() {
 	//
 	//}
 
-	//generateResponses(jsonResponses)
+	generateResponses(jsonResponses)
 
 	jsonObjects := objectsSchema{}
 
