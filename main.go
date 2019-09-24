@@ -76,9 +76,14 @@ func main() {
 	jsonObjects := objectsSchema{}
 
 	if err := json.Unmarshal(objects, &jsonObjects); err != nil {
-		fmt.Printf("JSON Error:%#v\n", err)
+		fmt.Printf("JSON Error:%s\n", err)
 		return
 	}
 
 	generateObjects(jsonObjects)
+	//for k, v := range jsonObjects.Definitions {
+	//	fmt.Println("Key:", k)
+	//	fmt.Printf("V:%#v\n", v.GetGoType())
+	//	fmt.Printf("P:%#v\n", v.GetProperties())
+	//}
 }

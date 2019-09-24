@@ -1,8 +1,10 @@
 package main
 
-const (
-	OUTPUT_DIR_NAME = "output"
+var (
+	OUTPUT_DIR_NAME string = "output"
+)
 
+const (
 	RESP_DIR_NAME         = "responses"
 	RESP_HEADER_TMPL_NAME = "templates/responses.header.template"
 	RESP_TMPL_NAME        = "templates/responses.template"
@@ -35,6 +37,5 @@ const (
 	SCHEMA_TYPE_INTERFACE string = "interface"
 	SCHEMA_TYPE_NUMBER    string = "number"
 	SCHEMA_TYPE_UNKNOWN   string = "UNKNOWN"
+	SCHEMA_TYPE_MULTIPLE  string = "multiple"
 )
-
-//const ()

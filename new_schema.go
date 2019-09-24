@@ -5,11 +5,17 @@ import (
 	"fmt"
 )
 
+//////////////////////////////////////////////////////////////////////
+// JSON schema main structure
+//////////////////////////////////////////////////////////////////////
 type schema struct {
-	Title       string                        `json:"title"`
-	Definitions map[string]schemaJSONProperty `json:"definitions"`
+	Title       string                         `json:"title"`
+	Definitions map[string]*schemaJSONProperty `json:"definitions"`
 }
 
+//////////////////////////////////////////////////////////////////////
+// JSON schema `type` field wrapper
+//////////////////////////////////////////////////////////////////////
 type schemaTypeWrapper struct {
 	Type string `json:"-"`
 }
@@ -22,19 +28,29 @@ func (s *schemaTypeWrapper) UnmarshalJSON(b []byte) error {
 	var tmp interface{}
 
 	if err := json.Unmarshal(b, &tmp); err != nil {
-		return err
+		return schemaError{string(b), err}
 	}
 
 	switch tmp.(type) {
 	case string:
 		s.Type = fmt.Sprintf("%s", tmp)
 	case []interface{}:
-		s.Type = SCHEMA_TYPE_INTERFACE
+		s.Type = SCHEMA_TYPE_MULTIPLE
+	default:
+		s.Type = SCHEMA_TYPE_UNKNOWN
+		return schemaError{
+			errInfo: string(b),
+			err:     fmt.Errorf("%s", "unknown schema type"),
+		}
 	}
 
 	return nil
+
 }
 
+//////////////////////////////////////////////////////////////////////
+// JSON schema `items` field wrapper
+//////////////////////////////////////////////////////////////////////
 type schemaItemsWrapper struct {
 	Items    *schemaJSONProperty   `json:"-"`
 	ItemsArr []*schemaJSONProperty `json:"-"`
@@ -62,19 +78,28 @@ func (s *schemaItemsWrapper) UnmarshalJSON(b []byte) error {
 	var tmp interface{}
 
 	if err := json.Unmarshal(b, &tmp); err != nil {
-		return err
+		return schemaError{string(b), err}
 	}
 
 	switch tmp.(type) {
 	case []interface{}:
-		err := json.Unmarshal(b, &s.ItemsArr)
-		return err
+		if err := json.Unmarshal(b, &s.ItemsArr); err != nil {
+			return schemaError{string(b), err}
+		}
+
+		return nil
 	default:
-		err := json.Unmarshal(b, &s.Items)
-		return err
+		if err := json.Unmarshal(b, &s.Items); err != nil {
+			return schemaError{string(b), err}
+		}
+
+		return nil
 	}
 }
 
+//////////////////////////////////////////////////////////////////////
+// JSON schema element data structure
+//////////////////////////////////////////////////////////////////////
 type schemaJSONProperty struct {
 	Type       schemaTypeWrapper              `json:"type,omitempty"`
 	Descr      string                         `json:"description,omitempty"`
@@ -99,7 +124,7 @@ func (s schemaJSONProperty) GetType() string {
 		}
 	}
 
-	return "<<<UNKNOWN>>>"
+	return SCHEMA_TYPE_UNKNOWN
 }
 
 func (s schemaJSONProperty) GetGoType() (tmp []string) {
@@ -127,14 +152,44 @@ func (s schemaJSONProperty) GetDescription() string {
 	return s.Descr
 }
 
-func (s schemaJSONProperty) GetProperties() map[string]schemaJSONProperty {
-	tmp := make(map[string]schemaJSONProperty, len(s.Properties))
+func (s schemaJSONProperty) GetProperties() (tmp map[string]schemaJSONProperty) {
+	if len(s.AllOf) > 0 || len(s.OneOf) > 0 {
+		var tmpOf []*schemaJSONProperty
 
-	for k, v := range s.Properties {
-		tmp[k] = *v
+		if len(s.AllOf) > 0 {
+			tmpOf = s.AllOf
+		} else if len(s.OneOf) > 0 {
+			tmpOf = s.OneOf
+		}
+
+		tmp = make(map[string]schemaJSONProperty, len(tmpOf))
+
+		for _, v := range tmpOf {
+			if v.IsBuiltin() {
+				objName := convertName(v.GetGoType()[0])
+
+				tmp[objName] = *v
+			} else if v.IsObject() {
+				for k, v := range v.GetProperties() {
+					tmp[k] = v
+				}
+			}
+		}
+
+		return tmp
 	}
 
-	return tmp
+	if len(s.Properties) > 0 {
+		tmp = make(map[string]schemaJSONProperty, len(s.Properties))
+
+		for k, v := range s.Properties {
+			tmp[k] = *v
+		}
+
+		return tmp
+	}
+
+	return nil
 }
 
 func (s schemaJSONProperty) IsString() bool {
@@ -167,4 +222,8 @@ func (s schemaJSONProperty) IsInterface() bool {
 
 func (s schemaJSONProperty) IsNumber() bool {
 	return s.GetType() == SCHEMA_TYPE_NUMBER
+}
+
+func (s schemaJSONProperty) IsMultiple() bool {
+	return s.GetType() == SCHEMA_TYPE_MULTIPLE
 }

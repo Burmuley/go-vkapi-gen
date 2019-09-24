@@ -15,6 +15,7 @@ type schemaTypeChecker interface {
 	IsBoolean() bool
 	IsInterface() bool
 	IsNumber() bool
+	IsMultiple() bool
 }
 
 type schemaTyperChecker interface {

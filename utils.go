@@ -16,6 +16,7 @@ func convertName(jsonName string) string {
 		nameArr = nameArr[:len(nameArr)-1]
 	}
 
+	// Convert numbers to words according to Golang naming convention
 	nameArr[0] = strings.ReplaceAll(nameArr[0], "2", "two")
 
 	for k, v := range nameArr {
