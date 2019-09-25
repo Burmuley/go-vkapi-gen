@@ -7,52 +7,7 @@ import (
 )
 
 type responsesSchema struct {
-	//Definitions map[string]responsesDefinition `json:"definitions"`
 	Definitions map[string]schemaJSONProperty `json:"definitions"`
-}
-
-type responsesDefinition struct {
-	Type       string `json:"type"`
-	Properties struct {
-		Response propertyWrapper `json:"response"`
-	} `json:"properties"`
-	Description string `json:"description,omitempty"`
-}
-
-func (r responsesDefinition) IsString() bool {
-	return r.Type == SCHEMA_TYPE_STRING
-}
-
-func (r responsesDefinition) IsInt() bool {
-	return r.Type == SCHEMA_TYPE_INT
-}
-
-func (r responsesDefinition) IsBuiltin() bool {
-	return r.Type == SCHEMA_TYPE_BUILTIN
-}
-
-func (r responsesDefinition) IsArray() bool {
-	return r.Type == SCHEMA_TYPE_ARRAY
-}
-
-func (r responsesDefinition) IsObject() bool {
-	return r.Type == SCHEMA_TYPE_OBJECT
-}
-
-func (r responsesDefinition) IsBoolean() bool {
-	return r.Type == SCHEMA_TYPE_BOOLEAN
-}
-
-func (r responsesDefinition) IsInterface() bool {
-	return r.Type == SCHEMA_TYPE_INTERFACE
-}
-
-func (r responsesDefinition) GetGoType() string {
-	return r.Type
-}
-
-func (r responsesDefinition) GetDescription() string {
-	return r.Description
 }
 
 func responseWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, filePrefix string) {

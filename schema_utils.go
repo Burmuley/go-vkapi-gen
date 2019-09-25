@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"go/format"
 	"log"
@@ -12,47 +11,6 @@ import (
 	"sync"
 	"text/template"
 )
-
-func parseSchemaJSON(b []byte, wrapper interface{}) error {
-	tmp := &struct {
-		Type interface{} `json:"type"`
-	}{}
-
-	if err := json.Unmarshal(b, tmp); err != nil {
-		return err
-	}
-
-	if tmp.Type == nil {
-		resp := schemaTypes["builtin"]()
-		if err := json.Unmarshal(b, resp); err != nil {
-			return err
-		}
-
-		*wrapper.(*interface{}) = resp
-		return nil
-	}
-
-	switch tmp.Type.(type) {
-	case []interface{}:
-		resp := schemaTypes["string"]()
-		if err := json.Unmarshal(b, resp); err != nil {
-			return err
-		}
-
-		*wrapper.(*interface{}) = resp
-	case string:
-		if str := tmp.Type.(string); str != "" {
-			resp := schemaTypes[str]()
-			if err := json.Unmarshal(b, resp); err != nil {
-				return err
-			}
-
-			*wrapper.(*interface{}) = resp
-		}
-	}
-
-	return nil
-}
 
 func checkFileExists(f string) bool {
 	finf, _ := os.Stat(f)

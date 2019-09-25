@@ -40,10 +40,10 @@ func main() {
 	//responses, err := loadSchemaFile(VK_SCHEMA_FILES["RESPONSES_LOCAL"])
 
 	responses, err := loadSchemaFile(VK_SCHEMA_FILES["VK_API_SCHEMA_RESPONSES"])
-	//
-	//if err != nil {
-	//	fmt.Println("Error:", err)
-	//}
+
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 
 	objects, err := loadSchemaFile(VK_SCHEMA_FILES["VK_API_SCHEMA_OBJECTS"])
 	//objects, err := loadSchemaFile(VK_SCHEMA_FILES["OBJECTS_LOCAL"])
@@ -58,19 +58,6 @@ func main() {
 		return
 	}
 
-	//for k, v := range jsonResponses.Definitions {
-	//	fmt.Println("\n", k)
-	//	if r, ok := v.Properties["response"]; ok {
-	//		fmt.Println("\t", r.GetGoType(), r.GetType())
-	//		if r.GetType() == SCHEMA_TYPE_OBJECT {
-	//			for k, v := range r.GetProperties() {
-	//				fmt.Println("\t\t", k, v)
-	//			}
-	//		}
-	//	}
-	//
-	//}
-
 	generateResponses(jsonResponses)
 
 	jsonObjects := objectsSchema{}
@@ -81,9 +68,4 @@ func main() {
 	}
 
 	generateObjects(jsonObjects)
-	//for k, v := range jsonObjects.Definitions {
-	//	fmt.Println("Key:", k)
-	//	fmt.Printf("V:%#v\n", v.GetGoType())
-	//	fmt.Printf("P:%#v\n", v.GetProperties())
-	//}
 }

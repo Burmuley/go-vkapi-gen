@@ -14,18 +14,6 @@ const (
 	OBJ_TMPL_NAME        = "templates/objects.template"
 )
 
-// Responses type constants
-const (
-	TYPE_INT int = iota
-	TYPE_STRING
-	TYPE_BUILTIN
-	TYPE_ARRAY
-	TYPE_OBJECT
-	TYPE_BOOLEAN
-	TYPE_INTERFACE
-	TYPE_NUMBER
-)
-
 // Response types (string option)
 const (
 	SCHEMA_TYPE_INT       string = "integer"
