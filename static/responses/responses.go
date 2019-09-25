@@ -11,7 +11,7 @@ type RequestParams struct {
 }
 
 type ApiRawResponse struct {
-	Error         *errors.ApiError `json:"error"`
-	RequestParams []RequestParams  `json:"request_params"`
-	Response      json.RawMessage  `json:"response"`
+	Error         errors.ApiError `json:"error"`
+	RequestParams []RequestParams `json:"request_params"`
+	Response      json.RawMessage `json:"response"`
 }
