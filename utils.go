@@ -16,6 +16,11 @@ func convertName(jsonName string) string {
 		nameArr = nameArr[:len(nameArr)-1]
 	}
 
+	// Convert numbers to words according to Golang naming convention
+	if strings.Index(nameArr[0], "2") == 0 {
+		nameArr[0] = strings.ReplaceAll(nameArr[0], "2", "two")
+	}
+
 	for k, v := range nameArr {
 		nameArr[k] = strings.Title(v)
 	}
@@ -82,3 +87,15 @@ func getObjectTypeName(s string) string {
 
 	return strings.Join([]string{prefix, convertName(str[len(str)-1])}, ".")
 }
+
+func logString(s string) {
+	log.Println(s)
+}
+
+func logJSONError(err error) {
+	logString(fmt.Sprintf("JSON Error:%#v\n", err))
+}
+
+//func copyStatic(outputDir string) error {
+//
+//}

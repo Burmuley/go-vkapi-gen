@@ -11,8 +11,8 @@ var (
 		"VK_API_SCHEMA_OBJECTS":   "https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/objects.json",
 		"VK_API_SCHEMA_METHODS":   "https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/methods.json",
 		"VK_API_SCHEMA_RESPONSES": "https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/responses.json",
-		"RESPONSES_LOCAL":         "/Users/burmuley/go/src/github.com/vk-api-schema/test_min.json",
-		"OBJECTS_LOCAL":           "/Users/burmuley/go/src/github.com/vk-api-schema/obj_test_min.json",
+		"RESPONSES_LOCAL":         "/Users/konstantin_vasilev/go/src/github.com/vk-api-schema/resp_test_min.json",
+		"OBJECTS_LOCAL":           "/Users/konstantin_vasilev/go/src/github.com/vk-api-schema/obj_test_min.json",
 	}
 )
 
@@ -54,7 +54,7 @@ func main() {
 
 	jsonResponses := responsesSchema{}
 	if err := json.Unmarshal(responses, &jsonResponses); err != nil {
-		fmt.Printf("JSON Error:%#v\n", err)
+		logJSONError(err)
 		return
 	}
 
@@ -63,7 +63,7 @@ func main() {
 	jsonObjects := objectsSchema{}
 
 	if err := json.Unmarshal(objects, &jsonObjects); err != nil {
-		fmt.Printf("JSON Error:%#v\n", err)
+		fmt.Printf("JSON Error:%s\n", err)
 		return
 	}
 

@@ -7,53 +7,7 @@ import (
 )
 
 type objectsSchema struct {
-	Definitions map[string]objectsDefinition `json:"definitions"`
-}
-
-type objectsDefinition struct {
-	Type        string                     `json:"type"`
-	Properties  map[string]propertyWrapper `json:"properties"`
-	Description string                     `json:"description"`
-}
-
-func (o objectsDefinition) IsString() bool {
-	return o.Type == SCHEMA_TYPE_STRING
-}
-
-func (o objectsDefinition) IsInt() bool {
-	return o.Type == SCHEMA_TYPE_INT
-}
-
-func (o objectsDefinition) IsBuiltin() bool {
-	return o.Type == SCHEMA_TYPE_BUILTIN
-}
-
-func (o objectsDefinition) IsArray() bool {
-	return o.Type == SCHEMA_TYPE_ARRAY
-}
-
-func (o objectsDefinition) IsObject() bool {
-	return o.Type == SCHEMA_TYPE_OBJECT
-}
-
-func (o objectsDefinition) IsBoolean() bool {
-	return o.Type == SCHEMA_TYPE_BOOLEAN
-}
-
-func (o objectsDefinition) IsInterface() bool {
-	return o.Type == SCHEMA_TYPE_INTERFACE
-}
-
-func (o objectsDefinition) GetProperties() map[string]propertyWrapper {
-	return o.Properties
-}
-
-func (o objectsDefinition) GetGoType() string {
-	return detectGoType(o.Type)
-}
-
-func (o objectsDefinition) GetDescription() string {
-	return o.Description
+	Definitions map[string]schemaJSONProperty `json:"definitions"`
 }
 
 func objectWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, filePrefix string) {

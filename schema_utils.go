@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"go/format"
 	"log"
@@ -12,47 +11,6 @@ import (
 	"sync"
 	"text/template"
 )
-
-func parseSchemaJSON(b []byte, wrapper interface{}) error {
-	tmp := &struct {
-		Type interface{} `json:"type"`
-	}{}
-
-	if err := json.Unmarshal(b, tmp); err != nil {
-		return err
-	}
-
-	if tmp.Type == nil {
-		resp := schemaTypes["builtin"]()
-		if err := json.Unmarshal(b, resp); err != nil {
-			return err
-		}
-
-		*wrapper.(*interface{}) = resp
-		return nil
-	}
-
-	switch tmp.Type.(type) {
-	case []interface{}:
-		resp := schemaTypes["string"]()
-		if err := json.Unmarshal(b, resp); err != nil {
-			return err
-		}
-
-		*wrapper.(*interface{}) = resp
-	case string:
-		if str := tmp.Type.(string); str != "" {
-			resp := schemaTypes[str]()
-			if err := json.Unmarshal(b, resp); err != nil {
-				return err
-			}
-
-			*wrapper.(*interface{}) = resp
-		}
-	}
-
-	return nil
-}
 
 func checkFileExists(f string) bool {
 	finf, _ := os.Stat(f)
@@ -115,9 +73,19 @@ func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, pre
 		} else {
 			bb := buf.Bytes()
 			if fmtCode, err := format.Source(bb); err != nil {
-				log.Printf("[[%s]] error formatting code: %s", prefix, err)
+				log.Printf("[[%s]] error formatting code: %s. Writing code as is...", fName, err)
+				if n, e := f.Write(bb); e != nil {
+					log.Printf("error writing %s: %s", fName, e)
+				} else {
+					log.Printf("successfully written %d bytes (unformatted) to %s.", n, fName)
+				}
 			} else {
-				f.Write(fmtCode)
+				if n, e := f.Write(fmtCode); e != nil {
+					log.Printf("error writing %s: %s", fName, e)
+				} else {
+					log.Printf("successfully written %d bytes to %s", n, fName)
+				}
+
 			}
 
 			return
