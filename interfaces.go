@@ -1,8 +1,9 @@
 package main
 
 type schemaTyper interface {
-	GetGoType() string
+	GetGoType(stripPrefix bool) []string
 	GetDescription() string
+	GetProperties(stripPrefix bool) map[string]schemaJSONProperty
 }
 
 type schemaTypeChecker interface {
@@ -13,13 +14,11 @@ type schemaTypeChecker interface {
 	IsObject() bool
 	IsBoolean() bool
 	IsInterface() bool
+	IsNumber() bool
+	IsMultiple() bool
 }
 
 type schemaTyperChecker interface {
 	schemaTyper
 	schemaTypeChecker
-}
-
-type schemaProperty interface {
-	GetProperties() map[string]propertyWrapper
 }

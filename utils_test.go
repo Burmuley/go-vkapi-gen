@@ -19,6 +19,11 @@ func Test_convertName(t *testing.T) {
 			args{"widgets_getPages_response"},
 			"WidgetsGetPages",
 		},
+		{
+			"TestNumberFirstByte",
+			args{"2fa_required"},
+			"TwofaRequired",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
