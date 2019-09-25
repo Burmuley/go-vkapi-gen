@@ -1,8 +1,10 @@
 package main
 
-const (
-	OUTPUT_DIR_NAME = "output"
+var (
+	OUTPUT_DIR_NAME string = "output"
+)
 
+const (
 	RESP_DIR_NAME         = "responses"
 	RESP_HEADER_TMPL_NAME = "templates/responses.header.template"
 	RESP_TMPL_NAME        = "templates/responses.template"
@@ -10,18 +12,6 @@ const (
 	OBJ_DIR_NAME         = "objects"
 	OBJ_HEADER_TMPL_NAME = "templates/objects.header.template"
 	OBJ_TMPL_NAME        = "templates/objects.template"
-)
-
-// Responses type constants
-const (
-	TYPE_INT int = iota
-	TYPE_STRING
-	TYPE_BUILTIN
-	TYPE_ARRAY
-	TYPE_OBJECT
-	TYPE_BOOLEAN
-	TYPE_INTERFACE
-	TYPE_NUMBER
 )
 
 // Response types (string option)
@@ -35,4 +25,5 @@ const (
 	SCHEMA_TYPE_INTERFACE string = "interface"
 	SCHEMA_TYPE_NUMBER    string = "number"
 	SCHEMA_TYPE_UNKNOWN   string = "UNKNOWN"
+	SCHEMA_TYPE_MULTIPLE  string = "multiple"
 )
