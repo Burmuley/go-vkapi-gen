@@ -17,7 +17,9 @@ func convertName(jsonName string) string {
 	}
 
 	// Convert numbers to words according to Golang naming convention
-	nameArr[0] = strings.ReplaceAll(nameArr[0], "2", "two")
+	if strings.Index(nameArr[0], "2") == 0 {
+		nameArr[0] = strings.ReplaceAll(nameArr[0], "2", "two")
+	}
 
 	for k, v := range nameArr {
 		nameArr[k] = strings.Title(v)
@@ -93,3 +95,7 @@ func logString(s string) {
 func logJSONError(err error) {
 	logString(fmt.Sprintf("JSON Error:%#v\n", err))
 }
+
+//func copyStatic(outputDir string) error {
+//
+//}
