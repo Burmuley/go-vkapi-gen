@@ -22,3 +22,18 @@ type schemaTyperChecker interface {
 	schemaTyper
 	schemaTypeChecker
 }
+
+type IMethod interface {
+	GetResponse() IMethodItem
+	GetExtResponse() IMethodItem
+	GetParameters() []IMethodItem
+	GetName() string
+	IsExtended() bool
+}
+
+type IMethodItem interface {
+	GetGoType() string
+	IsRequired() bool
+	GetType() string
+	GetName() string
+}

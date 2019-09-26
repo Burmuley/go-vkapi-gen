@@ -81,8 +81,8 @@ func main() {
 	//mrc := 0
 
 	for _, v := range jsonMethods.Methods {
-		if v.Responses.ExtResponse != nil {
-			fmt.Println(v.Name)
+		if v.IsExtended() {
+			fmt.Println(v.GetName())
 		}
 	}
 }
