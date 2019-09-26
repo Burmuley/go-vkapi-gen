@@ -32,6 +32,10 @@ func getApiNamePrefix(name string) string {
 	return strings.Split(name, "_")[0]
 }
 
+func getApiMethodNamePrefix(name string) string {
+	return strings.Split(name, ".")[0]
+}
+
 // readHTTPSchemaFile: reads VK API schema file from HTTP URL and saves it locally in the working directory
 func readHTTPSchemaFile(fileUrl string) ([]byte, error) {
 	var schemaFile []byte

@@ -94,7 +94,6 @@ func (s *schemaItemsWrapper) UnmarshalJSON(b []byte) error {
 // JSON schema element data structure
 //////////////////////////////////////////////////////////////////////
 type schemaJSONProperty struct {
-	Name       string                         `json:"name"`
 	Type       schemaTypeWrapper              `json:"type,omitempty"`
 	Descr      string                         `json:"description,omitempty"`
 	AllOf      []*schemaJSONProperty          `json:"allOf,omitempty"`
