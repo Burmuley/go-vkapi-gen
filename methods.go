@@ -16,11 +16,13 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
+	"log"
 	"sync"
 )
 
-func methodsWriter() {
-
+func methodsWriter(wg *sync.WaitGroup, ch chan IMethod, filePrefix string) {
+	schemaMethodWriter(wg, ch, filePrefix, METHODS_HEADER_TMPL_NAME, METHODS_TMPL_NAME)
 }
 
 func createChannels(chList map[string]struct{}) (res *map[string]chan map[string]schemaTyperChecker) {
@@ -44,25 +46,31 @@ func generateMethods(methods []IMethod) {
 	}
 
 	// Create channels map and fill it
-	chans := *createChannels(methodsCats)
+	//chans := *createChannels(methodsCats)
+	chans := make(map[string]chan IMethod, len(methodsCats))
+
+	for k := range methodsCats {
+		chans[k] = make(chan IMethod, 10)
+	}
+
 	wg := &sync.WaitGroup{}
 	wg.Add(len(methodsCats))
 
 	for k := range methodsCats {
-		go responseWriter(wg, chans[k], k)
+		go methodsWriter(wg, chans[k], k)
 	}
 
-	// Scan responses.Definitions and distribute data among appropriate channels
-	//for k, v := range methods {
-	//	tmp := make(map[string]schemaTyperChecker)
-	//	tmp[k] = v
-	//
-	//	if ch, ok := chans[getApiNamePrefix(k)]; ok {
-	//		ch <- tmp
-	//	} else {
-	//		log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", k))
-	//	}
-	//}
+	//Scan methods and distribute data among appropriate channels
+	for _, v := range methods {
+		var tmp IMethod
+		tmp = v
+
+		if ch, ok := chans[getApiMethodNamePrefix(v.GetName())]; ok {
+			ch <- tmp
+		} else {
+			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", getApiMethodNamePrefix(v.GetName())))
+		}
+	}
 
 	// Close all channels
 	for _, v := range chans {

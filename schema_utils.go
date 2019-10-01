@@ -108,7 +108,7 @@ func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, pre
 	}
 }
 
-func schemaMethodWriter(wg *sync.WaitGroup, ch chan map[string]IMethod, prefix, headerTmpl, bodyTmpl string) {
+func schemaMethodWriter(wg *sync.WaitGroup, ch chan IMethod, prefix, headerTmpl, bodyTmpl string) {
 	var (
 		f   *os.File
 		err error

@@ -1,0 +1,4 @@
+//function - {{.GetName}}
+{{if .IsExtended}}
+    //function_extended - {{.GetName}}Extended
+{{end}}

@@ -94,11 +94,17 @@ func main() {
 		return
 	}
 
-	//mrc := 0
+	imethods := make([]IMethod, 0)
 
 	for _, v := range jsonMethods.Methods {
-		if v.IsExtended() {
-			fmt.Println(v.GetName())
-		}
+		imethods = append(imethods, v)
 	}
+
+	//for _, v := range jsonMethods.Methods {
+	//	if v.IsExtended() {
+	//		fmt.Println(v.GetName())
+	//	}
+	//}
+
+	generateMethods(imethods)
 }
