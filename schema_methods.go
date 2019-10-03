@@ -144,13 +144,10 @@ func (s schemaMethodsItem) GetGoType() string {
 	}
 
 	if fmt.Sprint(s.Type) == SCHEMA_TYPE_ARRAY {
-		return s.Items.GetGoType()
+		return fmt.Sprintf("[]%s", s.Items.GetGoType())
 	}
 
 	return detectGoType(s.Type)
-
-	//tmp = append(tmp, detectGoType(fmt.Sprintf("%s", s.Type)))
-	//return tmp
 }
 
 func (s schemaMethodsItem) IsRequired() bool {

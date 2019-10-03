@@ -12,7 +12,7 @@
     {{$r := index .M.GetResponses .C -}}
     {{$resp := $r.GetGoType -}}
 {{template "function_descr" . -}}
-func ({{getFLetter .M.GetName}} *{{convertName (getMNamePrefix .M.GetName)}}) {{template "function_name" .}}({{template "function_params" .}}) ({{$resp}}, error) {
+func ({{getFLetter .M.GetName}} *{{convertName (getMNamePrefix .M.GetName)}}) {{template "function_name" .}}({{template "function_params" .}}) (resp {{$resp}}, err error) {
     params := map[string]string{}
     {{if eq .C 1 -}}
         params["extended"] = "1"
@@ -22,13 +22,9 @@ func ({{getFLetter .M.GetName}} *{{convertName (getMNamePrefix .M.GetName)}}) {{
 
     {{template "function_params_fill" .}}
 
-    resp := {{$resp -}}{}
+    err = {{getFLetter .M.GetName -}}.SendObjRequest("{{.M.GetName -}}", params, &resp)
 
-    if err := {{getFLetter .M.GetName -}}.SendObjRequest("{{.M.GetName -}}", params, &resp); err != nil {
-        return {{$resp -}}{}, err
-    }
-
-    return resp, nil
+    return
 }
 {{end -}}
 {{define "function_descr" -}}
@@ -53,6 +49,8 @@ func ({{getFLetter .M.GetName}} *{{convertName (getMNamePrefix .M.GetName)}}) {{
             {{if $v.IsRequired}}
                 {{if or $v.IsNumber $v.IsInt $v.IsBuiltin $v.IsBoolean}}
                     params["{{$v.GetName -}}"] = fmt.Sprint({{convertParam $v.GetName}})
+                {{else if $v.IsArray}}
+                    params["{{$v.GetName -}}"] = SliceToString({{convertParam $v.GetName}})
                 {{else}}
                     params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
                 {{end}}
@@ -63,6 +61,10 @@ func ({{getFLetter .M.GetName}} *{{convertName (getMNamePrefix .M.GetName)}}) {{
                     }
                 {{else if $v.IsBoolean}}
                     params["{{$v.GetName -}}"] = fmt.Sprint({{convertParam $v.GetName}})
+                {{else if $v.IsArray}}
+                    if len({{convertParam $v.GetName}}) > 0 {
+                        params["{{$v.GetName -}}"] = SliceToString({{convertParam $v.GetName}})
+                    }
                 {{else}}
                     if {{convertParam $v.GetName}} != "" {
                         params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
