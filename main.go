@@ -53,6 +53,10 @@ func main() {
 	readEnvVariables()
 	printEnvInfo()
 
+	if err := copyStatic(OUTPUT_DIR_NAME); err != nil {
+		logError(err)
+	}
+
 	//responses, err := loadSchemaFile(VK_SCHEMA_FILES["RESPONSES_LOCAL"])
 
 	responses, err := loadSchemaFile(VK_SCHEMA_FILES["VK_API_SCHEMA_RESPONSES"])
@@ -94,11 +98,12 @@ func main() {
 		return
 	}
 
-	imethods := make([]IMethod, 0)
+	iMethods := make([]IMethod, 0)
 
 	for _, v := range jsonMethods.Methods {
-		imethods = append(imethods, v)
+		iMethods = append(iMethods, v)
 	}
 
-	generateMethods(imethods)
+	generateMethods(iMethods)
+
 }

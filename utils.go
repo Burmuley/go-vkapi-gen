@@ -17,10 +17,12 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -136,11 +138,84 @@ func logJSONError(err error) {
 	logString(fmt.Sprintf("JSON Error:%#v\n", err))
 }
 
+func logError(err error) {
+	logString(fmt.Sprintf("ERROR: %#v\n", err))
+}
+
 func checkFileExists(f string) bool {
 	finf, _ := os.Stat(f)
 	return finf != nil
 }
 
-//func copyStatic(outputDir string) error {
-//
-//}
+func copyStatic(outputDir string) error {
+	logString(fmt.Sprintf("<<< Copying static content from `static` directory to `%s` >>>", outputDir))
+	staticDir := "./static/"
+	return copyDir(staticDir, outputDir)
+}
+
+func copyDir(src string, dst string) error {
+	var (
+		err      error
+		fileObjs []os.FileInfo
+		srcInfo  os.FileInfo
+	)
+
+	if srcInfo, err = os.Stat(src); err != nil {
+		return err
+	}
+
+	if err = os.MkdirAll(dst, srcInfo.Mode()); err != nil {
+		return err
+	}
+
+	if fileObjs, err = ioutil.ReadDir(src); err != nil {
+		return err
+	}
+	for _, fd := range fileObjs {
+		srcFileObj := path.Join(src, fd.Name())
+		dstFileObj := path.Join(dst, fd.Name())
+
+		if fd.IsDir() {
+			if err = copyDir(srcFileObj, dstFileObj); err != nil {
+				logError(err)
+			}
+		} else {
+			if err = copyFile(srcFileObj, dstFileObj); err != nil {
+				logError(err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func copyFile(src, dst string) error {
+	var (
+		err     error
+		srcFile *os.File
+		dstFile *os.File
+		srcInfo os.FileInfo
+	)
+
+	if srcFile, err = os.Open(src); err != nil {
+		return err
+	}
+
+	defer srcFile.Close()
+
+	if dstFile, err = os.Create(dst); err != nil {
+		return err
+	}
+
+	defer dstFile.Close()
+
+	if _, err = io.Copy(dstFile, srcFile); err != nil {
+		return err
+	}
+
+	if srcInfo, err = os.Stat(src); err != nil {
+		return err
+	}
+
+	return os.Chmod(dst, srcInfo.Mode())
+}
