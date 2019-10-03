@@ -1,0 +1,78 @@
+{{define "function_name" -}}
+    {{- $fName := "" -}}
+    {{- if eq .C 1 -}}
+        {{- $fName = printf "%sExtended" (convertName (getMNameSuffix .M.GetName)) -}}
+    {{- else -}}
+        {{- $fName = convertName (getMNameSuffix .M.GetName) -}}
+    {{- end -}}
+{{- $fName -}}
+{{end -}}
+{{define "function_template" -}}
+    {{$fName := "" -}}
+    {{$r := index .M.GetResponses .C -}}
+    {{$resp := $r.GetGoType -}}
+{{template "function_descr" . -}}
+func ({{getFLetter .M.GetName}} *{{convertName (getMNamePrefix .M.GetName)}}) {{template "function_name" .}}({{template "function_params" .}}) (resp {{$resp}}, err error) {
+    params := map[string]interface{}{}
+    {{if eq .C 1 -}}
+        params["extended"] = "1"
+    {{else if and (eq .C 0) (.M.IsExtended) -}}
+        params["extended"] = "0"
+    {{end}}
+
+    {{template "function_params_fill" .}}
+
+    err = {{getFLetter .M.GetName -}}.SendObjRequest("{{.M.GetName -}}", params, &resp)
+
+    return
+}
+{{end -}}
+{{define "function_descr" -}}
+// {{template "function_name" .}} - {{.M.GetDescription}}
+    {{if gt (len .M.GetParameters) 0 -}}
+        // Parameters:
+        {{- range $i, $v := .M.GetParameters}}
+        //   * {{convertParam $v.GetName}} - {{$v.GetDescription -}}
+        {{end}}
+    {{end -}}
+{{end -}}
+{{define "function_params" -}}
+    {{range $i, $v := .M.GetParameters -}}
+        {{if ne $v.GetName "extended" -}}
+            {{printf "%s %s," (convertParam $v.GetName) $v.GetGoType -}}
+        {{end -}}
+    {{end -}}
+{{end -}}
+{{define "function_params_fill"}}
+    {{range $i, $v := .M.GetParameters -}}
+        {{if ne $v.GetName "extended"}}
+            {{if $v.IsRequired}}
+                {{if $v.IsArray}}
+                    params["{{$v.GetName -}}"] = SliceToString({{convertParam $v.GetName}})
+                {{else}}
+                    params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
+                {{end}}
+            {{else}}
+                {{if or $v.IsNumber $v.IsInt}}
+                    if {{convertParam $v.GetName}} > 0 {
+                        params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
+                    }
+                {{else if $v.IsBoolean}}
+                    params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
+                {{else if $v.IsArray}}
+                    if len({{convertParam $v.GetName}}) > 0 {
+                        params["{{$v.GetName -}}"] = SliceToString({{convertParam $v.GetName}})
+                    }
+                {{else}}
+                    if {{convertParam $v.GetName}} != "" {
+                        params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
+                    }
+                {{end}}
+            {{end}}
+        {{end}}
+    {{end -}}
+{{end}}
+{{$c := . -}}
+{{range $i, $v := .GetResponses -}}
+    {{template "function_template" (deco $c $i)}}
+{{end -}}
