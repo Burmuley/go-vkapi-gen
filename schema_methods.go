@@ -102,6 +102,42 @@ type schemaMethodsItem struct {
 	Ref       string             `json:"$ref"`
 }
 
+func (s schemaMethodsItem) IsString() bool {
+	return s.Type == SCHEMA_TYPE_STRING
+}
+
+func (s schemaMethodsItem) IsInt() bool {
+	return s.Type == SCHEMA_TYPE_INT
+}
+
+func (s schemaMethodsItem) IsBuiltin() bool {
+	return len(s.Ref) > 0
+}
+
+func (s schemaMethodsItem) IsArray() bool {
+	return s.Type == SCHEMA_TYPE_ARRAY
+}
+
+func (s schemaMethodsItem) IsObject() bool {
+	return s.Type == SCHEMA_TYPE_OBJECT
+}
+
+func (s schemaMethodsItem) IsBoolean() bool {
+	return s.Type == SCHEMA_TYPE_BOOLEAN
+}
+
+func (s schemaMethodsItem) IsInterface() bool {
+	return false
+}
+
+func (s schemaMethodsItem) IsNumber() bool {
+	return s.Type == SCHEMA_TYPE_NUMBER
+}
+
+func (s schemaMethodsItem) IsMultiple() bool {
+	return false
+}
+
 func (s schemaMethodsItem) GetGoType() string {
 	if len(s.Ref) > 0 {
 		return getObjectTypeName(s.Ref)
@@ -111,7 +147,7 @@ func (s schemaMethodsItem) GetGoType() string {
 		return s.Items.GetGoType()
 	}
 
-	return ""
+	return detectGoType(s.Type)
 
 	//tmp = append(tmp, detectGoType(fmt.Sprintf("%s", s.Type)))
 	//return tmp

@@ -43,6 +43,22 @@ func convertName(jsonName string) string {
 	return strings.Join(nameArr, "")
 }
 
+func convertParam(param string) string {
+	nameArr := strings.Split(param, "_")
+
+	if nameArr[0] == "type" {
+		nameArr[0] = "pType"
+	}
+
+	for k, v := range nameArr {
+		if k != 0 {
+			nameArr[k] = strings.Title(v)
+		}
+	}
+
+	return strings.Join(nameArr, "")
+}
+
 func getApiNamePrefix(name string) string {
 	return strings.Split(name, "_")[0]
 }

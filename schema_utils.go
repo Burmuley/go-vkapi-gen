@@ -139,6 +139,7 @@ func schemaMethodWriter(wg *sync.WaitGroup, ch chan IMethod, prefix, headerTmpl,
 
 	funcs := make(map[string]interface{})
 	funcs["convertName"] = convertName
+	funcs["convertParam"] = convertParam
 	funcs["getMNameSuffix"] = getApiMethodNameSuffix
 	funcs["getMNamePrefix"] = getApiMethodNamePrefix
 	funcs["deco"] = func(method IMethod, count int) struct {

@@ -54,4 +54,5 @@ type IMethodItem interface {
 	GetType() string
 	GetName() string
 	GetDescription() string
+	schemaTypeChecker
 }
