@@ -12,6 +12,8 @@ go build -o go-vkapi-gen
 ./go-vkapi-gen || exit 1
 
 # clone GO VKAPI repo
+mkdir -p ~/.ssh
+touch ~/.ssh/known_hosts
 ssh-keyscan -t rsa gitlab.com >> ~/.ssh/known_hosts
 git clone "$GOVKAPI_SSH_REPO_URL" || exit 1
 cd "$GOVKAPI_REPO_DIR" || exit 1
