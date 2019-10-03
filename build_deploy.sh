@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -ex
 
 which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
 
@@ -27,6 +28,7 @@ git checkout -b "$br_name" || exit 1
 
 # copy generated output to the target repo dir
 cp -Rf ../output/ ./ || exit 1
+ls -l
 
 # TODO: add all files to a new branch and commit it to repo
 git status
