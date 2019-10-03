@@ -1,3 +1,18 @@
+/*
+Copyright 2019 Konstantin Vasilev (burmuley@gmail.com)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package main
 
 import (
@@ -5,6 +20,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -28,8 +44,32 @@ func convertName(jsonName string) string {
 	return strings.Join(nameArr, "")
 }
 
+func convertParam(param string) string {
+	nameArr := strings.Split(param, "_")
+
+	if nameArr[0] == "type" {
+		nameArr[0] = "pType"
+	}
+
+	for k, v := range nameArr {
+		if k != 0 {
+			nameArr[k] = strings.Title(v)
+		}
+	}
+
+	return strings.Join(nameArr, "")
+}
+
 func getApiNamePrefix(name string) string {
 	return strings.Split(name, "_")[0]
+}
+
+func getApiMethodNamePrefix(name string) string {
+	return strings.Split(name, ".")[0]
+}
+
+func getApiMethodNameSuffix(name string) string {
+	return strings.Split(name, ".")[1]
 }
 
 // readHTTPSchemaFile: reads VK API schema file from HTTP URL and saves it locally in the working directory
@@ -94,6 +134,11 @@ func logString(s string) {
 
 func logJSONError(err error) {
 	logString(fmt.Sprintf("JSON Error:%#v\n", err))
+}
+
+func checkFileExists(f string) bool {
+	finf, _ := os.Stat(f)
+	return finf != nil
 }
 
 //func copyStatic(outputDir string) error {
