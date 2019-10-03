@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -133,6 +134,11 @@ func logString(s string) {
 
 func logJSONError(err error) {
 	logString(fmt.Sprintf("JSON Error:%#v\n", err))
+}
+
+func checkFileExists(f string) bool {
+	finf, _ := os.Stat(f)
+	return finf != nil
 }
 
 //func copyStatic(outputDir string) error {

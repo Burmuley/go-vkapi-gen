@@ -20,29 +20,29 @@ import (
 )
 
 type schemaMethods struct {
-	Errors  []schemaMethodsErrors  `json:"errors"`
-	Methods []schemaMethodsMethods `json:"methods"`
+	Errors  []schemaApiError `json:"errors"`
+	Methods []schemaMethod   `json:"methods"`
 }
 
-type schemaMethodsErrors struct {
+type schemaApiError struct {
 	Name  string `json:"name"`
 	Code  int    `json:"code"`
 	Descr string `json:"description"`
 }
 
-type schemaMethodsMethods struct {
-	Name         string               `json:"name"`
-	Descr        string               `json:"description"`
-	AccessTokens []string             `json:"access_token_type"`
-	Params       []*schemaMethodsItem `json:"parameters"`
+type schemaMethod struct {
+	Name         string              `json:"name"`
+	Descr        string              `json:"description"`
+	AccessTokens []string            `json:"access_token_type"`
+	Params       []*schemaMethodItem `json:"parameters"`
 	Responses    struct {
-		Response    *schemaMethodsItem `json:"response"`
-		ExtResponse *schemaMethodsItem `json:"extendedResponse"`
+		Response    *schemaMethodItem `json:"response"`
+		ExtResponse *schemaMethodItem `json:"extendedResponse"`
 	} `json:"responses"`
-	Errors []*schemaMethodsErrors
+	Errors []*schemaApiError
 }
 
-func (s schemaMethodsMethods) GetDescription() string {
+func (s schemaMethod) GetDescription() string {
 	if len(s.Descr) == 0 {
 		return "NO DESCRIPTION IN JSON SCHEMA"
 	}
@@ -50,7 +50,7 @@ func (s schemaMethodsMethods) GetDescription() string {
 	return s.Descr
 }
 
-func (s schemaMethodsMethods) GetResponses() []IMethodItem {
+func (s schemaMethod) GetResponses() []IMethodItem {
 	tmp := make([]IMethodItem, 0)
 
 	if s.Responses.Response != nil {
@@ -64,15 +64,15 @@ func (s schemaMethodsMethods) GetResponses() []IMethodItem {
 	return tmp
 }
 
-func (s schemaMethodsMethods) GetResponse() IMethodItem {
+func (s schemaMethod) GetResponse() IMethodItem {
 	return s.Responses.Response
 }
 
-func (s schemaMethodsMethods) GetExtResponse() IMethodItem {
+func (s schemaMethod) GetExtResponse() IMethodItem {
 	return s.Responses.ExtResponse
 }
 
-func (s schemaMethodsMethods) GetParameters() []IMethodItem {
+func (s schemaMethod) GetParameters() []IMethodItem {
 	mi := make([]IMethodItem, len(s.Params))
 
 	for k, v := range s.Params {
@@ -82,63 +82,63 @@ func (s schemaMethodsMethods) GetParameters() []IMethodItem {
 	return mi
 }
 
-func (s schemaMethodsMethods) GetName() string {
+func (s schemaMethod) GetName() string {
 	return s.Name
 }
 
-func (s schemaMethodsMethods) IsExtended() bool {
+func (s schemaMethod) IsExtended() bool {
 	return s.Responses.ExtResponse != nil
 }
 
 // Data structure implements method parameter
-type schemaMethodsItem struct {
-	Name      string             `json:"name"`
-	Type      string             `json:"type"`
-	Descr     string             `json:"description"`
-	Required  bool               `json:"required"`
-	Enum      []interface{}      `json:"enum"`
-	EnumNames []string           `json:"enumNames"`
-	Items     *schemaMethodsItem `json:"items"`
-	Ref       string             `json:"$ref"`
+type schemaMethodItem struct {
+	Name      string            `json:"name"`
+	Type      string            `json:"type"`
+	Descr     string            `json:"description"`
+	Required  bool              `json:"required"`
+	Enum      []interface{}     `json:"enum"`
+	EnumNames []string          `json:"enumNames"`
+	Items     *schemaMethodItem `json:"items"`
+	Ref       string            `json:"$ref"`
 }
 
-func (s schemaMethodsItem) IsString() bool {
+func (s schemaMethodItem) IsString() bool {
 	return s.Type == SCHEMA_TYPE_STRING
 }
 
-func (s schemaMethodsItem) IsInt() bool {
+func (s schemaMethodItem) IsInt() bool {
 	return s.Type == SCHEMA_TYPE_INT
 }
 
-func (s schemaMethodsItem) IsBuiltin() bool {
+func (s schemaMethodItem) IsBuiltin() bool {
 	return len(s.Ref) > 0
 }
 
-func (s schemaMethodsItem) IsArray() bool {
+func (s schemaMethodItem) IsArray() bool {
 	return s.Type == SCHEMA_TYPE_ARRAY
 }
 
-func (s schemaMethodsItem) IsObject() bool {
+func (s schemaMethodItem) IsObject() bool {
 	return s.Type == SCHEMA_TYPE_OBJECT
 }
 
-func (s schemaMethodsItem) IsBoolean() bool {
+func (s schemaMethodItem) IsBoolean() bool {
 	return s.Type == SCHEMA_TYPE_BOOLEAN
 }
 
-func (s schemaMethodsItem) IsInterface() bool {
+func (s schemaMethodItem) IsInterface() bool {
 	return false
 }
 
-func (s schemaMethodsItem) IsNumber() bool {
+func (s schemaMethodItem) IsNumber() bool {
 	return s.Type == SCHEMA_TYPE_NUMBER
 }
 
-func (s schemaMethodsItem) IsMultiple() bool {
+func (s schemaMethodItem) IsMultiple() bool {
 	return false
 }
 
-func (s schemaMethodsItem) GetGoType() string {
+func (s schemaMethodItem) GetGoType() string {
 	if len(s.Ref) > 0 {
 		return getObjectTypeName(s.Ref)
 	}
@@ -150,11 +150,11 @@ func (s schemaMethodsItem) GetGoType() string {
 	return detectGoType(s.Type)
 }
 
-func (s schemaMethodsItem) IsRequired() bool {
+func (s schemaMethodItem) IsRequired() bool {
 	return s.Required
 }
 
-func (s schemaMethodsItem) GetType() string {
+func (s schemaMethodItem) GetType() string {
 	if len(s.Ref) > 0 {
 		return SCHEMA_TYPE_BUILTIN
 	}
@@ -162,11 +162,11 @@ func (s schemaMethodsItem) GetType() string {
 	return s.Type
 }
 
-func (s schemaMethodsItem) GetName() string {
+func (s schemaMethodItem) GetName() string {
 	return s.Name
 }
 
-func (s schemaMethodsItem) GetDescription() string {
+func (s schemaMethodItem) GetDescription() string {
 	if len(s.Descr) == 0 {
 		return "NO DESCRIPTION IN JSON SCHEMA"
 	}

@@ -27,11 +27,6 @@ import (
 	"text/template"
 )
 
-func checkFileExists(f string) bool {
-	finf, _ := os.Stat(f)
-	return finf != nil
-}
-
 func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, prefix, dir, headerTmpl, bodyTmpl string) {
 	var (
 		f   *os.File
