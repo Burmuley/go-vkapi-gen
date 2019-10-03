@@ -19,6 +19,7 @@ ssh-keyscan -t rsa gitlab.com >> ~/.ssh/known_hosts
 git clone "$GOVKAPI_SSH_REPO_URL" || exit 1
 cd "$GOVKAPI_REPO_DIR" || exit 1
 
+git checkout master || exit 1
 git config --global user.email "cicd-go-vkapi-gen@gitlab.com"
 git config --global user.name "CIDI GO VK API Generator"
 
@@ -27,7 +28,7 @@ br_name=$(date +"generated-%m-%d-%Y-%H-%M-%S")
 git checkout -b "$br_name" || exit 1
 
 # copy generated output to the target repo dir
-cp -Rf ../output/ ./ || exit 1
+cp -Rfp ../output/* ./ || exit 1
 ls -l
 
 # TODO: add all files to a new branch and commit it to repo
