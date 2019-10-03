@@ -137,13 +137,28 @@ func schemaMethodWriter(wg *sync.WaitGroup, ch chan IMethod, prefix, headerTmpl,
 
 	defer f.Close()
 
+	funcs := make(map[string]interface{})
+	funcs["convertName"] = convertName
+	funcs["getMNameSuffix"] = getApiMethodNameSuffix
+	funcs["getMNamePrefix"] = getApiMethodNamePrefix
+	funcs["deco"] = func(method IMethod, count int) struct {
+		M IMethod
+		C int
+	} {
+		return struct {
+			M IMethod
+			C int
+		}{M: method, C: count}
+	}
+	funcs["getFLetter"] = func(s string) string {
+		return string(s[0])
+	}
+
 	// Render header and write to the file
-	tmpl, err := template.New(strings.Split(headerTmpl, "/")[1]).ParseFiles(headerTmpl)
+	tmpl, err := template.New(strings.Split(headerTmpl, "/")[1]).Funcs(funcs).ParseFiles(headerTmpl)
 	err = tmpl.Execute(&buf, prefix)
 
 	// Read responses definitions from channel and append to the file
-	funcs := make(map[string]interface{})
-	funcs["convertName"] = convertName
 
 	for {
 		d, more := <-ch

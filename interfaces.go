@@ -42,7 +42,9 @@ type IMethod interface {
 	GetResponse() IMethodItem
 	GetExtResponse() IMethodItem
 	GetParameters() []IMethodItem
+	GetResponses() []IMethodItem
 	GetName() string
+	GetDescription() string
 	IsExtended() bool
 }
 
@@ -51,4 +53,5 @@ type IMethodItem interface {
 	IsRequired() bool
 	GetType() string
 	GetName() string
+	GetDescription() string
 }

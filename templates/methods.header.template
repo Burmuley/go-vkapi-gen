@@ -28,9 +28,11 @@ import (
     "gitlab.com/Burmuley/go-vkapi/responses"
 )
 
-type {{ . }} *VKApi
+type {{ convertName . }} struct {
+    *VKApi
+}
 
 /////////////////////////////////////////////////////////////
-// `{{ . }}` methods
+// `{{ convertName . }}` methods
 /////////////////////////////////////////////////////////////
 

@@ -32,6 +32,7 @@ type schemaMethodsErrors struct {
 
 type schemaMethodsMethods struct {
 	Name         string               `json:"name"`
+	Descr        string               `json:"description"`
 	AccessTokens []string             `json:"access_token_type"`
 	Params       []*schemaMethodsItem `json:"parameters"`
 	Responses    struct {
@@ -39,6 +40,28 @@ type schemaMethodsMethods struct {
 		ExtResponse *schemaMethodsItem `json:"extendedResponse"`
 	} `json:"responses"`
 	Errors []*schemaMethodsErrors
+}
+
+func (s schemaMethodsMethods) GetDescription() string {
+	if len(s.Descr) == 0 {
+		return "NO DESCRIPTION IN JSON SCHEMA"
+	}
+
+	return s.Descr
+}
+
+func (s schemaMethodsMethods) GetResponses() []IMethodItem {
+	tmp := make([]IMethodItem, 0)
+
+	if s.Responses.Response != nil {
+		tmp = append(tmp, s.Responses.Response)
+	}
+
+	if s.Responses.ExtResponse != nil {
+		tmp = append(tmp, s.Responses.ExtResponse)
+	}
+
+	return tmp
 }
 
 func (s schemaMethodsMethods) GetResponse() IMethodItem {
@@ -50,7 +73,7 @@ func (s schemaMethodsMethods) GetExtResponse() IMethodItem {
 }
 
 func (s schemaMethodsMethods) GetParameters() []IMethodItem {
-	mi := make([]IMethodItem, 0)
+	mi := make([]IMethodItem, len(s.Params))
 
 	for k, v := range s.Params {
 		mi[k] = v
@@ -108,4 +131,12 @@ func (s schemaMethodsItem) GetType() string {
 
 func (s schemaMethodsItem) GetName() string {
 	return s.Name
+}
+
+func (s schemaMethodsItem) GetDescription() string {
+	if len(s.Descr) == 0 {
+		return "NO DESCRIPTION IN JSON SCHEMA"
+	}
+
+	return s.Descr
 }

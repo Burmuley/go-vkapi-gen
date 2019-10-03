@@ -1,4 +1,42 @@
-//function - {{.GetName}}
-{{if .IsExtended}}
-    //function_extended - {{.GetName}}Extended
+{{define "function_name"}}
+    {{- $fName := "" -}}
+    {{- if eq .C 1 -}}
+        {{- $fName = printf "%sExtended" (convertName (getMNameSuffix .M.GetName)) -}}
+    {{- else -}}
+        {{- $fName = convertName (getMNameSuffix .M.GetName) -}}
+    {{- end -}}
+{{- $fName -}}
+{{end}}
+{{define "function_template"}}
+    {{$fName := ""}}
+    {{$r := index .M.GetResponses .C}}
+    {{$resp := $r.GetGoType}}
+{{template "function_descr" . -}}
+func ({{getFLetter .M.GetName}} {{convertName (getMNamePrefix .M.GetName)}}) {{- template "function_name" .}}({{template "function_params" .}}) ({{$resp}}, error) {
+    params := map[string]string{}
+    {{if eq .C 1 -}}
+        params["extended"] = "1"
+    {{else if and (eq .C 0) (.M.IsExtended)}}
+        params["extended"] = "0"
+    {{end}}
+}
+{{end}}
+{{define "function_descr"}}
+// {{template "function_name" .}} - {{.M.GetDescription}}
+// Parameters:
+{{- range $i, $v := .M.GetParameters}}
+//   * {{$v.GetName}} - {{$v.GetDescription -}}
+{{end}}
+{{end}}
+{{define "function_params"}}
+    {{range $i, $v := .M.GetParameters -}}
+        {{if ne $v.GetName "extended" -}}
+            {{printf "%s %s," $v.GetName $v.GetGoType}}
+        {{end -}}
+    {{end -}}
+{{end}}
+
+{{$c := .}}
+{{range $i, $v := .GetResponses}}
+    {{template "function_template" (deco $c $i)}}
 {{end}}
