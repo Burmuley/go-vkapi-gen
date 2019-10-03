@@ -37,6 +37,6 @@ git add --all || exit 1
 git status
 
 git commit -m "Auto-generated VK API SDK build. $(date)"
-git push -u origin/"$br_name"
+git push -u origin "$br_name"
 
 echo "DONE"
