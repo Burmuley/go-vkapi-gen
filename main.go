@@ -55,35 +55,35 @@ func main() {
 
 	//responses, err := loadSchemaFile(VK_SCHEMA_FILES["RESPONSES_LOCAL"])
 
-	//responses, err := loadSchemaFile(VK_SCHEMA_FILES["VK_API_SCHEMA_RESPONSES"])
-	//
-	//if err != nil {
-	//	fmt.Println("Error:", err)
-	//}
-	//
-	//objects, err := loadSchemaFile(VK_SCHEMA_FILES["VK_API_SCHEMA_OBJECTS"])
-	////objects, err := loadSchemaFile(VK_SCHEMA_FILES["OBJECTS_LOCAL"])
-	//
-	//if err != nil {
-	//	fmt.Println("Error:", err)
-	//}
-	//
-	//jsonResponses := responsesSchema{}
-	//if err := json.Unmarshal(responses, &jsonResponses); err != nil {
-	//	logJSONError(err)
-	//	return
-	//}
-	//
-	//generateResponses(jsonResponses)
+	responses, err := loadSchemaFile(VK_SCHEMA_FILES["VK_API_SCHEMA_RESPONSES"])
 
-	//jsonObjects := objectsSchema{}
-	//
-	//if err := json.Unmarshal(objects, &jsonObjects); err != nil {
-	//	fmt.Printf("JSON Error:%s\n", err)
-	//	return
-	//}
-	//
-	//generateObjects(jsonObjects)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	objects, err := loadSchemaFile(VK_SCHEMA_FILES["VK_API_SCHEMA_OBJECTS"])
+	////objects, err := loadSchemaFile(VK_SCHEMA_FILES["OBJECTS_LOCAL"])
+
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	jsonResponses := responsesSchema{}
+	if err := json.Unmarshal(responses, &jsonResponses); err != nil {
+		logJSONError(err)
+		return
+	}
+
+	generateResponses(jsonResponses)
+
+	jsonObjects := objectsSchema{}
+
+	if err := json.Unmarshal(objects, &jsonObjects); err != nil {
+		fmt.Printf("JSON Error:%s\n", err)
+		return
+	}
+
+	generateObjects(jsonObjects)
 
 	methods, _ := loadSchemaFile(VK_SCHEMA_FILES["VK_API_SCHEMA_METHODS"])
 
@@ -99,12 +99,6 @@ func main() {
 	for _, v := range jsonMethods.Methods {
 		imethods = append(imethods, v)
 	}
-
-	//for _, v := range jsonMethods.Methods {
-	//	if v.IsExtended() {
-	//		fmt.Println(v.GetName())
-	//	}
-	//}
 
 	generateMethods(imethods)
 }

@@ -37,6 +37,7 @@ func createChannels(chList map[string]struct{}) (res *map[string]chan map[string
 }
 
 func generateMethods(methods []IMethod) {
+	logString("<<< Generating VK API methods >>>")
 	methodsCats := make(map[string]struct{})
 
 	for k := range methods {
