@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
 
@@ -30,12 +31,12 @@ git checkout -b "$br_name" || exit 1
 cp -Rfp ../output/* ./ || exit 1
 ls -l
 
-# TODO: add all files to a new branch and commit it to repo
+# add all files to a new branch and commit it to repo
 git status
 git add --all || exit 1
 git status
 
-git commit -m "Auto-generated VK API SDK build. $(date)"
-git push -u origin "$br_name"
+git commit -m "Auto-generated VK API SDK build. $(date)" || exit 1
+git push -u origin "$br_name" || exit 1
 
 echo "DONE"
