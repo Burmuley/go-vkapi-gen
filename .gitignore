@@ -1,3 +1,4 @@
 output/**.go
+output/*.md
 output/*/*.go
 .idea/
