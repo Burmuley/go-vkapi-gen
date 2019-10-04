@@ -11,4 +11,5 @@ stages:
 BuildAndDeploy:
   stage: deploy
   script: /bin/bash build_deploy.sh
-  only: master
+  only:
+   - master
