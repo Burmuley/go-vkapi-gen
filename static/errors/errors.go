@@ -12,14 +12,14 @@ type ApiError struct {
 	Message string `json:"error_msg"`
 }
 
-func (e *ApiError) GetCode() int {
+func (e ApiError) GetCode() int {
 	return e.Code
 }
 
-func (e *ApiError) GetDescription() string {
+func (e ApiError) GetDescription() string {
 	return e.Message
 }
 
-func (e *ApiError) Error() string {
+func (e ApiError) Error() string {
 	return fmt.Sprintf("API ERROR! Code: %d, Message: %s", e.Code, e.Message)
 }
