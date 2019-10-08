@@ -37,6 +37,6 @@ git add --all || exit 1
 git status
 
 git commit -m "Auto-generated VK API SDK build. $(date)" || exit 1
-git push -u origin "$br_name" || exit 1
+git push -u origin "$br_name" -o merge_request.create -o merge_request.remove_source_branch -o merge_request.title="Auto-generated VK API SDK build. $(date)" -o merge_request.target=master || exit 1
 
 echo "DONE"
