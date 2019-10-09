@@ -31,7 +31,7 @@ func objectWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, fil
 }
 
 func generateObjects(objects objectsSchema) {
-	logString("<<< Generating VK API objects >>>")
+	logStep("Generating VK API objects")
 	defCats := make(map[string]struct{})
 	defKeys := make([]string, 0)
 

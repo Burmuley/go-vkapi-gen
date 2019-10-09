@@ -31,7 +31,7 @@ func responseWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, f
 }
 
 func generateResponses(responses responsesSchema) {
-	logString("<<< Generating VK API responses >>>")
+	logStep("Generating VK API responses")
 	defCats := make(map[string]struct{})
 	defKeys := make([]string, 0)
 
