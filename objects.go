@@ -18,6 +18,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"sort"
 	"sync"
 )
 
@@ -32,8 +33,10 @@ func objectWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, fil
 func generateObjects(objects objectsSchema) {
 	logString("<<< Generating VK API objects >>>")
 	defCats := make(map[string]struct{})
+	defKeys := make([]string, 0)
 
 	for k := range objects.Definitions {
+		defKeys = append(defKeys, k)
 		if _, ok := defCats[getApiNamePrefix(k)]; !ok {
 			defCats[getApiNamePrefix(k)] = struct{}{}
 		}
@@ -50,14 +53,15 @@ func generateObjects(objects objectsSchema) {
 	}
 
 	// Scan objects.Definitions and distribute data among appropriate channels
-	for k, v := range objects.Definitions {
+	sort.Strings(defKeys)
+	for _, v := range defKeys {
 		tmp := make(map[string]schemaTyperChecker)
-		tmp[k] = v
+		tmp[v] = objects.Definitions[v]
 
-		if ch, ok := chans[getApiNamePrefix(k)]; ok {
+		if ch, ok := chans[getApiNamePrefix(v)]; ok {
 			ch <- tmp
 		} else {
-			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", k))
+			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", v))
 		}
 	}
 
