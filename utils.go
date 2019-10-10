@@ -142,13 +142,21 @@ func logError(err error) {
 	logString(fmt.Sprintf("ERROR: %#v\n", err))
 }
 
+func logInfo(s string) {
+	logString(fmt.Sprintf("INFO: %s", s))
+}
+
+func logStep(s string) {
+	logInfo(fmt.Sprintf("STEP - %s", s))
+}
+
 func checkFileExists(f string) bool {
 	finf, _ := os.Stat(f)
 	return finf != nil
 }
 
 func copyStatic(outputDir string) error {
-	logString(fmt.Sprintf("<<< Copying static content from `static` directory to `%s` >>>", outputDir))
+	logStep(fmt.Sprintf("Copying static content from `static` directory to `%s`", outputDir))
 	staticDir := "./static/"
 	return copyDir(staticDir, outputDir)
 }
