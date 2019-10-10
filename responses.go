@@ -18,6 +18,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"sort"
 	"sync"
 )
 
@@ -30,10 +31,12 @@ func responseWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, f
 }
 
 func generateResponses(responses responsesSchema) {
-	logString("<<< Generating VK API responses >>>")
+	logStep("Generating VK API responses")
 	defCats := make(map[string]struct{})
+	defKeys := make([]string, 0)
 
 	for k := range responses.Definitions {
+		defKeys = append(defKeys, k)
 		if _, ok := defCats[getApiNamePrefix(k)]; !ok {
 			defCats[getApiNamePrefix(k)] = struct{}{}
 		}
@@ -50,14 +53,15 @@ func generateResponses(responses responsesSchema) {
 	}
 
 	// Scan responses.Definitions and distribute data among appropriate channels
-	for k, v := range responses.Definitions {
+	sort.Strings(defKeys)
+	for _, v := range defKeys {
 		tmp := make(map[string]schemaTyperChecker)
-		tmp[k] = v
+		tmp[v] = responses.Definitions[v]
 
-		if ch, ok := chans[getApiNamePrefix(k)]; ok {
+		if ch, ok := chans[getApiNamePrefix(v)]; ok {
 			ch <- tmp
 		} else {
-			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", k))
+			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", v))
 		}
 	}
 
