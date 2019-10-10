@@ -18,6 +18,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"sort"
 	"sync"
 )
 
@@ -25,19 +26,19 @@ func methodsWriter(wg *sync.WaitGroup, ch chan IMethod, filePrefix string) {
 	schemaMethodWriter(wg, ch, filePrefix, METHODS_HEADER_TMPL_NAME, METHODS_TMPL_NAME)
 }
 
-func createChannels(chList map[string]struct{}) (res *map[string]chan map[string]schemaTyperChecker) {
-	// Create channels map and fill it
-	chans := make(map[string]chan map[string]schemaTyperChecker, len(chList))
-
-	for k := range chList {
-		chans[k] = make(chan map[string]schemaTyperChecker, 10)
-	}
-
-	return &chans
-}
+//func createChannels(chList map[string]struct{}) (res *map[string]chan map[string]schemaTyperChecker) {
+//	// Create channels map and fill it
+//	chans := make(map[string]chan map[string]schemaTyperChecker, len(chList))
+//
+//	for k := range chList {
+//		chans[k] = make(chan map[string]schemaTyperChecker, 10)
+//	}
+//
+//	return &chans
+//}
 
 func generateMethods(methods []IMethod) {
-	logString("<<< Generating VK API methods >>>")
+	logStep("Generating VK API methods")
 	methodsCats := make(map[string]struct{})
 
 	for k := range methods {
@@ -62,6 +63,7 @@ func generateMethods(methods []IMethod) {
 	}
 
 	//Scan methods and distribute data among appropriate channels
+	sort.Slice(methods, func(i, j int) bool { return methods[i].GetName() < methods[j].GetName() })
 	for _, v := range methods {
 		var tmp IMethod
 		tmp = v

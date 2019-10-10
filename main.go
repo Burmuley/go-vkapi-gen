@@ -55,6 +55,8 @@ func main() {
 
 	if err := copyStatic(OUTPUT_DIR_NAME); err != nil {
 		logError(err)
+	} else {
+		logInfo("static content copied successfully")
 	}
 
 	//responses, err := loadSchemaFile(VK_SCHEMA_FILES["RESPONSES_LOCAL"])
