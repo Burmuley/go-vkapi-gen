@@ -16,7 +16,7 @@ limitations under the License.
 package main
 
 var (
-	OUTPUT_DIR_NAME string = "output"
+	outputDirName string = "output"
 )
 
 const (

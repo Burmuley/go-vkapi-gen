@@ -15,13 +15,13 @@ limitations under the License.
 */
 package main
 
-type schemaTyper interface {
+type IType interface {
 	GetGoType(stripPrefix bool) []string
 	GetDescription() string
 	GetProperties(stripPrefix bool) map[string]schemaJSONProperty
 }
 
-type schemaTypeChecker interface {
+type IChecker interface {
 	IsString() bool
 	IsInt() bool
 	IsBuiltin() bool
@@ -33,9 +33,9 @@ type schemaTypeChecker interface {
 	IsMultiple() bool
 }
 
-type schemaTyperChecker interface {
-	schemaTyper
-	schemaTypeChecker
+type ITypeChecker interface {
+	IType
+	IChecker
 }
 
 type IMethod interface {
@@ -54,5 +54,11 @@ type IMethodItem interface {
 	GetType() string
 	GetName() string
 	GetDescription() string
-	schemaTypeChecker
+	IChecker
+}
+
+type IGenerator interface {
+	GetWriter() func()
+	Parse(fPath string) error
+	Generate(outputDir string) error
 }

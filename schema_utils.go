@@ -27,7 +27,7 @@ import (
 	"text/template"
 )
 
-func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, prefix, dir, headerTmpl, bodyTmpl string) {
+func schemaWriter(wg *sync.WaitGroup, ch chan map[string]ITypeChecker, prefix, dir, headerTmpl, bodyTmpl string) {
 	var (
 		f   *os.File
 		err error
@@ -36,7 +36,7 @@ func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, pre
 
 	defer wg.Done()
 
-	fName := filepath.Join(OUTPUT_DIR_NAME, dir, fmt.Sprintf("%s.go", prefix))
+	fName := filepath.Join(outputDirName, dir, fmt.Sprintf("%s.go", prefix))
 
 	// Check if a target file exists and remove it if so
 	if checkFileExists(fName) {
@@ -112,7 +112,7 @@ func schemaMethodWriter(wg *sync.WaitGroup, ch chan IMethod, prefix, headerTmpl,
 
 	defer wg.Done()
 
-	fName := filepath.Join(OUTPUT_DIR_NAME, fmt.Sprintf("%s.go", prefix))
+	fName := filepath.Join(outputDirName, fmt.Sprintf("%s.go", prefix))
 
 	// Check if a target file exists and remove it if so
 	if checkFileExists(fName) {

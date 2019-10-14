@@ -19,11 +19,6 @@ import (
 	"fmt"
 )
 
-type schemaMethods struct {
-	Errors  []schemaApiError `json:"errors"`
-	Methods []schemaMethod   `json:"methods"`
-}
-
 type schemaApiError struct {
 	Name  string `json:"name"`
 	Code  int    `json:"code"`

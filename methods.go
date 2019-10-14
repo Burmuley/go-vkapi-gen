@@ -16,22 +16,59 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"sort"
 	"sync"
 )
 
+type schemaMethods struct {
+	Errors  []schemaApiError `json:"errors"`
+	Methods []schemaMethod   `json:"methods"`
+}
+
+func (s *schemaMethods) GetWriter() func() {
+	panic("implement me")
+}
+
+func (s *schemaMethods) Parse(fPath string) error {
+	methods, err := loadSchemaFile(fPath)
+
+	if err != nil {
+		return fmt.Errorf("schema load error: %s", err)
+	}
+
+	if err := json.Unmarshal(methods, s); err != nil {
+		return fmt.Errorf("JSON Error: %s", err)
+	}
+
+	return nil
+}
+
+func (s *schemaMethods) Generate(outputDir string) error {
+
+	iMethods := make([]IMethod, 0)
+
+	for _, v := range s.Methods {
+		iMethods = append(iMethods, v)
+	}
+
+	generateMethods(iMethods)
+
+	return nil
+}
+
 func methodsWriter(wg *sync.WaitGroup, ch chan IMethod, filePrefix string) {
 	schemaMethodWriter(wg, ch, filePrefix, METHODS_HEADER_TMPL_NAME, METHODS_TMPL_NAME)
 }
 
-//func createChannels(chList map[string]struct{}) (res *map[string]chan map[string]schemaTyperChecker) {
+//func createChannels(chList map[string]struct{}) (res *map[string]chan map[string]ITypeChecker) {
 //	// Create channels map and fill it
-//	chans := make(map[string]chan map[string]schemaTyperChecker, len(chList))
+//	chans := make(map[string]chan map[string]ITypeChecker, len(chList))
 //
 //	for k := range chList {
-//		chans[k] = make(chan map[string]schemaTyperChecker, 10)
+//		chans[k] = make(chan map[string]ITypeChecker, 10)
 //	}
 //
 //	return &chans

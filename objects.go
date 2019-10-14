@@ -16,6 +16,7 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"sort"
@@ -26,7 +27,33 @@ type objectsSchema struct {
 	Definitions map[string]schemaJSONProperty `json:"definitions"`
 }
 
-func objectWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, filePrefix string) {
+func (o *objectsSchema) Generate(outputDir string) error {
+	generateObjects(*o)
+
+	return nil
+}
+
+func (o *objectsSchema) GetWriter() func() {
+	return func() { return }
+}
+
+func (o *objectsSchema) Parse(fPath string) error {
+	objects, err := loadSchemaFile(fPath)
+
+	if err != nil {
+		return fmt.Errorf("schema load error: %s", err)
+	}
+
+	//jsonObjects := objectsSchema{}
+
+	if err := json.Unmarshal(objects, o); err != nil {
+		return fmt.Errorf("JSON Error: %s", err)
+	}
+
+	return nil
+}
+
+func objectWriter(wg *sync.WaitGroup, ch chan map[string]ITypeChecker, filePrefix string) {
 	schemaWriter(wg, ch, filePrefix, OBJ_DIR_NAME, OBJ_HEADER_TMPL_NAME, OBJ_TMPL_NAME)
 }
 
@@ -43,19 +70,19 @@ func generateObjects(objects objectsSchema) {
 	}
 
 	// Create channels map and fill it
-	chans := make(map[string]chan map[string]schemaTyperChecker)
+	chans := make(map[string]chan map[string]ITypeChecker)
 	wg := &sync.WaitGroup{}
 	wg.Add(len(defCats))
 
 	for k := range defCats {
-		chans[k] = make(chan map[string]schemaTyperChecker, 10)
+		chans[k] = make(chan map[string]ITypeChecker, 10)
 		go objectWriter(wg, chans[k], k)
 	}
 
 	// Scan objects.Definitions and distribute data among appropriate channels
 	sort.Strings(defKeys)
 	for _, v := range defKeys {
-		tmp := make(map[string]schemaTyperChecker)
+		tmp := make(map[string]ITypeChecker)
 		tmp[v] = objects.Definitions[v]
 
 		if ch, ok := chans[getApiNamePrefix(v)]; ok {
