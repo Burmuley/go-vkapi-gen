@@ -22,6 +22,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"text/template"
@@ -197,17 +198,59 @@ func schemaMethodWriter(wg *sync.WaitGroup, ch chan IMethod, prefix, headerTmpl,
 
 func detectGoType(s string) string {
 	switch s {
-	case SCHEMA_TYPE_NUMBER:
+	case schemaTypeNumber:
 		return "float64"
-	case SCHEMA_TYPE_INTERFACE:
+	case schemaTypeInterface:
 		return "interface{}"
-	case SCHEMA_TYPE_INT:
+	case schemaTypeInt:
 		return "int"
-	case SCHEMA_TYPE_BOOLEAN:
+	case schemaTypeBoolean:
 		return "bool"
-	case SCHEMA_TYPE_STRING:
+	case schemaTypeString:
 		return "string"
 	}
 
 	return s
+}
+
+func generateTypes(types map[string]schemaJSONProperty, dir, headerTmpl, bodyTmpl string) {
+	defCats := make(map[string]struct{})
+	defKeys := make([]string, 0)
+
+	for k := range types {
+		defKeys = append(defKeys, k)
+		if _, ok := defCats[getApiNamePrefix(k)]; !ok {
+			defCats[getApiNamePrefix(k)] = struct{}{}
+		}
+	}
+
+	// Create channels map and fill it
+	chans := make(map[string]chan map[string]ITypeChecker)
+	wg := &sync.WaitGroup{}
+	wg.Add(len(defCats))
+
+	for k := range defCats {
+		chans[k] = make(chan map[string]ITypeChecker, 10)
+		go schemaWriter(wg, chans[k], k, dir, headerTmpl, bodyTmpl)
+	}
+
+	// Scan types and distribute data among appropriate channels
+	sort.Strings(defKeys)
+	for _, v := range defKeys {
+		tmp := make(map[string]ITypeChecker)
+		tmp[v] = types[v]
+
+		if ch, ok := chans[getApiNamePrefix(v)]; ok {
+			ch <- tmp
+		} else {
+			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", v))
+		}
+	}
+
+	// Close all channels
+	for _, v := range chans {
+		close(v)
+	}
+
+	wg.Wait()
 }

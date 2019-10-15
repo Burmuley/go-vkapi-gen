@@ -63,7 +63,7 @@ func main() {
 
 	if err := copyStatic(outputDirName); err != nil {
 		logError(err)
-		return
+		os.Exit(1)
 	} else {
 		logInfo("static content copied successfully")
 	}
@@ -73,13 +73,12 @@ func main() {
 
 		if err := v.sObj.Parse(vkSchemaFiles[v.fName]); err != nil {
 			logError(err)
-			return
+			os.Exit(1)
 		}
 
 		if err := v.sObj.Generate(outputDirName); err != nil {
 			logError(err)
-			return
+			os.Exit(1)
 		}
 	}
-
 }

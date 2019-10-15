@@ -18,9 +18,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"sort"
-	"sync"
 )
 
 type objectsSchema struct {
@@ -28,7 +25,7 @@ type objectsSchema struct {
 }
 
 func (o *objectsSchema) Generate(outputDir string) error {
-	generateObjects(*o)
+	generateTypes(o.Definitions, OBJ_DIR_NAME, OBJ_HEADER_TMPL_NAME, OBJ_TMPL_NAME)
 
 	return nil
 }
@@ -51,51 +48,4 @@ func (o *objectsSchema) Parse(fPath string) error {
 	}
 
 	return nil
-}
-
-func objectWriter(wg *sync.WaitGroup, ch chan map[string]ITypeChecker, filePrefix string) {
-	schemaWriter(wg, ch, filePrefix, OBJ_DIR_NAME, OBJ_HEADER_TMPL_NAME, OBJ_TMPL_NAME)
-}
-
-func generateObjects(objects objectsSchema) {
-	logStep("Generating VK API objects")
-	defCats := make(map[string]struct{})
-	defKeys := make([]string, 0)
-
-	for k := range objects.Definitions {
-		defKeys = append(defKeys, k)
-		if _, ok := defCats[getApiNamePrefix(k)]; !ok {
-			defCats[getApiNamePrefix(k)] = struct{}{}
-		}
-	}
-
-	// Create channels map and fill it
-	chans := make(map[string]chan map[string]ITypeChecker)
-	wg := &sync.WaitGroup{}
-	wg.Add(len(defCats))
-
-	for k := range defCats {
-		chans[k] = make(chan map[string]ITypeChecker, 10)
-		go objectWriter(wg, chans[k], k)
-	}
-
-	// Scan objects.Definitions and distribute data among appropriate channels
-	sort.Strings(defKeys)
-	for _, v := range defKeys {
-		tmp := make(map[string]ITypeChecker)
-		tmp[v] = objects.Definitions[v]
-
-		if ch, ok := chans[getApiNamePrefix(v)]; ok {
-			ch <- tmp
-		} else {
-			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", v))
-		}
-	}
-
-	// Close all channels
-	for _, v := range chans {
-		close(v)
-	}
-
-	wg.Wait()
 }

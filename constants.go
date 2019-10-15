@@ -34,14 +34,14 @@ const (
 
 // Response types (string option)
 const (
-	SCHEMA_TYPE_INT       string = "integer"
-	SCHEMA_TYPE_STRING    string = "string"
-	SCHEMA_TYPE_ARRAY     string = "array"
-	SCHEMA_TYPE_OBJECT    string = "object"
-	SCHEMA_TYPE_BUILTIN   string = "builtin"
-	SCHEMA_TYPE_BOOLEAN   string = "boolean"
-	SCHEMA_TYPE_INTERFACE string = "interface"
-	SCHEMA_TYPE_NUMBER    string = "number"
-	SCHEMA_TYPE_UNKNOWN   string = "UNKNOWN"
-	SCHEMA_TYPE_MULTIPLE  string = "multiple"
+	schemaTypeInt       string = "integer"
+	schemaTypeString    string = "string"
+	schemaTypeArray     string = "array"
+	schemaTypeObject    string = "object"
+	schemaTypeBuiltin   string = "builtin"
+	schemaTypeBoolean   string = "boolean"
+	schemaTypeInterface string = "interface"
+	schemaTypeNumber    string = "number"
+	schemaTypeUnknown   string = "UNKNOWN"
+	schemaTypeMultiple  string = "multiple"
 )

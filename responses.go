@@ -18,9 +18,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"sort"
-	"sync"
 )
 
 type responsesSchema struct {
@@ -28,7 +25,7 @@ type responsesSchema struct {
 }
 
 func (r *responsesSchema) Generate(outputDir string) error {
-	generateResponses(*r)
+	generateTypes(r.Definitions, RESP_DIR_NAME, RESP_HEADER_TMPL_NAME, RESP_TMPL_NAME)
 
 	return nil
 }
@@ -49,51 +46,4 @@ func (r *responsesSchema) Parse(fPath string) error {
 	}
 
 	return nil
-}
-
-func responseWriter(wg *sync.WaitGroup, ch chan map[string]ITypeChecker, filePrefix string) {
-	schemaWriter(wg, ch, filePrefix, RESP_DIR_NAME, RESP_HEADER_TMPL_NAME, RESP_TMPL_NAME)
-}
-
-func generateResponses(responses responsesSchema) {
-	logStep("Generating VK API responses")
-	defCats := make(map[string]struct{})
-	defKeys := make([]string, 0)
-
-	for k := range responses.Definitions {
-		defKeys = append(defKeys, k)
-		if _, ok := defCats[getApiNamePrefix(k)]; !ok {
-			defCats[getApiNamePrefix(k)] = struct{}{}
-		}
-	}
-
-	// Create channels map and fill it
-	chans := make(map[string]chan map[string]ITypeChecker)
-	wg := &sync.WaitGroup{}
-	wg.Add(len(defCats))
-
-	for k := range defCats {
-		chans[k] = make(chan map[string]ITypeChecker, 10)
-		go responseWriter(wg, chans[k], k)
-	}
-
-	// Scan responses.Definitions and distribute data among appropriate channels
-	sort.Strings(defKeys)
-	for _, v := range defKeys {
-		tmp := make(map[string]ITypeChecker)
-		tmp[v] = responses.Definitions[v]
-
-		if ch, ok := chans[getApiNamePrefix(v)]; ok {
-			ch <- tmp
-		} else {
-			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", v))
-		}
-	}
-
-	// Close all channels
-	for _, v := range chans {
-		close(v)
-	}
-
-	wg.Wait()
 }
