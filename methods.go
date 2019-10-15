@@ -28,6 +28,18 @@ type schemaMethods struct {
 	Methods []schemaMethod   `json:"methods"`
 }
 
+func (s schemaMethods) GetPrefixes() (res map[string]struct{}) {
+	res = make(map[string]struct{})
+
+	for k := range s.Methods {
+		if _, ok := res[getApiMethodNamePrefix(s.Methods[k].GetName())]; !ok {
+			res[getApiMethodNamePrefix(s.Methods[k].GetName())] = struct{}{}
+		}
+	}
+
+	return
+}
+
 func (s *schemaMethods) GetWriter() func() {
 	panic("implement me")
 }

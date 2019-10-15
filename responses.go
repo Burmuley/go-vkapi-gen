@@ -22,8 +22,16 @@ import (
 
 type responseDefinition map[string]schemaJSONProperty
 
-func (r responseDefinition) GetPrefix() string {
-	panic("implement me")
+func (r responseDefinition) GetPrefixes() (res map[string]struct{}) {
+	res = make(map[string]struct{})
+
+	for k := range r {
+		if _, ok := res[getApiNamePrefix(k)]; !ok {
+			res[getApiNamePrefix(k)] = struct{}{}
+		}
+	}
+
+	return
 }
 
 type responsesSchema struct {

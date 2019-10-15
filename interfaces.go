@@ -64,5 +64,5 @@ type IGenerator interface {
 }
 
 type ICommon interface {
-	GetPrefix() string
+	GetPrefixes() map[string]struct{}
 }

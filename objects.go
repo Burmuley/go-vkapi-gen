@@ -20,8 +20,22 @@ import (
 	"fmt"
 )
 
+type objectDefinitions map[string]schemaJSONProperty
+
+func (o objectDefinitions) GetPrefixes() (res map[string]struct{}) {
+	res = make(map[string]struct{})
+
+	for k := range o {
+		if _, ok := res[getApiNamePrefix(k)]; !ok {
+			res[getApiNamePrefix(k)] = struct{}{}
+		}
+	}
+
+	return
+}
+
 type objectsSchema struct {
-	Definitions map[string]schemaJSONProperty `json:"definitions"`
+	Definitions objectDefinitions `json:"definitions"`
 }
 
 func (o *objectsSchema) Generate(outputDir string) error {
