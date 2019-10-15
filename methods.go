@@ -60,7 +60,7 @@ func (s *schemaMethods) Generate(outputDir string) error {
 }
 
 func methodsWriter(wg *sync.WaitGroup, ch chan IMethod, filePrefix string) {
-	schemaMethodWriter(wg, ch, filePrefix, METHODS_HEADER_TMPL_NAME, METHODS_TMPL_NAME)
+	schemaMethodWriter(wg, ch, filePrefix, methodsHeaderTmplName, methodsTmplName)
 }
 
 //func createChannels(chList map[string]struct{}) (res *map[string]chan map[string]ITypeChecker) {

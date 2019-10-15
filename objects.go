@@ -25,7 +25,10 @@ type objectsSchema struct {
 }
 
 func (o *objectsSchema) Generate(outputDir string) error {
-	generateTypes(o.Definitions, OBJ_DIR_NAME, OBJ_HEADER_TMPL_NAME, OBJ_TMPL_NAME)
+	tmplFuncs := make(map[string]interface{})
+	tmplFuncs["convertName"] = convertName
+
+	generateTypes(o.Definitions, outputDir, objDirName, objHeaderTmplName, objTmplName, tmplFuncs)
 
 	return nil
 }

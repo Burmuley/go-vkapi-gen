@@ -25,7 +25,10 @@ type responsesSchema struct {
 }
 
 func (r *responsesSchema) Generate(outputDir string) error {
-	generateTypes(r.Definitions, RESP_DIR_NAME, RESP_HEADER_TMPL_NAME, RESP_TMPL_NAME)
+	tmplFuncs := make(map[string]interface{})
+	tmplFuncs["convertName"] = convertName
+
+	generateTypes(r.Definitions, outputDir, respDirName, respHeaderTmplName, respTmplName, tmplFuncs)
 
 	return nil
 }

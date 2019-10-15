@@ -213,7 +213,7 @@ func detectGoType(s string) string {
 	return s
 }
 
-func generateTypes(types map[string]schemaJSONProperty, dir, headerTmpl, bodyTmpl string) {
+func generateTypes(types map[string]schemaJSONProperty, outRootDir, dir, headerTmpl, bodyTmpl string, tmplFuncs map[string]interface{}) {
 	defCats := make(map[string]struct{})
 	defKeys := make([]string, 0)
 
@@ -228,9 +228,6 @@ func generateTypes(types map[string]schemaJSONProperty, dir, headerTmpl, bodyTmp
 	chans := make(map[string]chan interface{})
 	wg := &sync.WaitGroup{}
 	wg.Add(len(defCats))
-
-	tmplFuncs := make(map[string]interface{})
-	tmplFuncs["convertName"] = convertName
 
 	for k := range defCats {
 		chans[k] = make(chan interface{}, 10)

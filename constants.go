@@ -19,20 +19,21 @@ var (
 	outputDirName string = "output"
 )
 
+// Output directories and paths to templates
 const (
-	RESP_DIR_NAME         = "responses"
-	RESP_HEADER_TMPL_NAME = "templates/responses.header.template"
-	RESP_TMPL_NAME        = "templates/responses.template"
+	respDirName        = "responses"
+	respHeaderTmplName = "templates/responses.header.template"
+	respTmplName       = "templates/responses.template"
 
-	OBJ_DIR_NAME         = "objects"
-	OBJ_HEADER_TMPL_NAME = "templates/objects.header.template"
-	OBJ_TMPL_NAME        = "templates/objects.template"
+	objDirName        = "objects"
+	objHeaderTmplName = "templates/objects.header.template"
+	objTmplName       = "templates/objects.template"
 
-	METHODS_HEADER_TMPL_NAME = "templates/methods.header.template"
-	METHODS_TMPL_NAME        = "templates/methods.template"
+	methodsHeaderTmplName = "templates/methods.header.template"
+	methodsTmplName       = "templates/methods.template"
 )
 
-// Response types (string option)
+// Response and Object types
 const (
 	schemaTypeInt       string = "integer"
 	schemaTypeString    string = "string"
