@@ -28,7 +28,7 @@ import (
 	"text/template"
 )
 
-func schemaWriter(wg *sync.WaitGroup, ch chan map[string]ITypeChecker, prefix, dir, headerTmpl, bodyTmpl string) {
+func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, prefix, dir, headerTmpl, bodyTmpl string, tmplFuncs map[string]interface{}) {
 	var (
 		f   *os.File
 		err error
@@ -62,14 +62,14 @@ func schemaWriter(wg *sync.WaitGroup, ch chan map[string]ITypeChecker, prefix, d
 	err = tmpl.Execute(&buf, prefix)
 
 	// Read responses definitions from channel and append to the file
-	funcs := make(map[string]interface{})
-	funcs["convertName"] = convertName
+	//tmplFuncs := make(map[string]interface{})
+	//tmplFuncs["convertName"] = convertName
 
 	for {
 		d, more := <-ch
 
 		if more {
-			tmpl, err := template.New(strings.Split(bodyTmpl, "/")[1]).Funcs(funcs).ParseFiles(bodyTmpl)
+			tmpl, err := template.New(strings.Split(bodyTmpl, "/")[1]).Funcs(tmplFuncs).ParseFiles(bodyTmpl)
 
 			if err != nil {
 				log.Println(err)
@@ -225,13 +225,16 @@ func generateTypes(types map[string]schemaJSONProperty, dir, headerTmpl, bodyTmp
 	}
 
 	// Create channels map and fill it
-	chans := make(map[string]chan map[string]ITypeChecker)
+	chans := make(map[string]chan interface{})
 	wg := &sync.WaitGroup{}
 	wg.Add(len(defCats))
 
+	tmplFuncs := make(map[string]interface{})
+	tmplFuncs["convertName"] = convertName
+
 	for k := range defCats {
-		chans[k] = make(chan map[string]ITypeChecker, 10)
-		go schemaWriter(wg, chans[k], k, dir, headerTmpl, bodyTmpl)
+		chans[k] = make(chan interface{}, 10)
+		go schemaWriter(wg, chans[k], k, dir, headerTmpl, bodyTmpl, tmplFuncs)
 	}
 
 	// Scan types and distribute data among appropriate channels

@@ -75,7 +75,6 @@ func methodsWriter(wg *sync.WaitGroup, ch chan IMethod, filePrefix string) {
 //}
 
 func generateMethods(methods []IMethod) {
-	logStep("Generating VK API methods")
 	methodsCats := make(map[string]struct{})
 
 	for k := range methods {
