@@ -62,3 +62,7 @@ type IGenerator interface {
 	Parse(fPath string) error
 	Generate(outputDir string) error
 }
+
+type ICommon interface {
+	GetPrefix() string
+}

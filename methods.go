@@ -59,21 +59,6 @@ func (s *schemaMethods) Generate(outputDir string) error {
 	return nil
 }
 
-func methodsWriter(wg *sync.WaitGroup, ch chan IMethod, filePrefix string) {
-	schemaMethodWriter(wg, ch, filePrefix, methodsHeaderTmplName, methodsTmplName)
-}
-
-//func createChannels(chList map[string]struct{}) (res *map[string]chan map[string]ITypeChecker) {
-//	// Create channels map and fill it
-//	chans := make(map[string]chan map[string]ITypeChecker, len(chList))
-//
-//	for k := range chList {
-//		chans[k] = make(chan map[string]ITypeChecker, 10)
-//	}
-//
-//	return &chans
-//}
-
 func generateMethods(methods []IMethod) {
 	methodsCats := make(map[string]struct{})
 
@@ -85,17 +70,36 @@ func generateMethods(methods []IMethod) {
 
 	// Create channels map and fill it
 	//chans := *createChannels(methodsCats)
-	chans := make(map[string]chan IMethod, len(methodsCats))
+	chans := make(map[string]chan interface{}, len(methodsCats))
 
 	for k := range methodsCats {
-		chans[k] = make(chan IMethod, 10)
+		chans[k] = make(chan interface{}, 10)
 	}
 
 	wg := &sync.WaitGroup{}
 	wg.Add(len(methodsCats))
 
+	funcs := make(map[string]interface{})
+	funcs["convertName"] = convertName
+	funcs["convertParam"] = convertParam
+	funcs["getMNameSuffix"] = getApiMethodNameSuffix
+	funcs["getMNamePrefix"] = getApiMethodNamePrefix
+	funcs["deco"] = func(method IMethod, count int) struct {
+		M IMethod
+		C int
+	} {
+		return struct {
+			M IMethod
+			C int
+		}{M: method, C: count}
+	}
+	funcs["getFLetter"] = func(s string) string {
+		return string(s[0])
+	}
+
 	for k := range methodsCats {
-		go methodsWriter(wg, chans[k], k)
+		//go methodsWriter(wg, chans[k], k)
+		go schemaWriter(wg, chans[k], k, "/", methodsHeaderTmplName, methodsTmplName, funcs)
 	}
 
 	//Scan methods and distribute data among appropriate channels

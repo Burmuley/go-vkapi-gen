@@ -20,8 +20,14 @@ import (
 	"fmt"
 )
 
+type responseDefinition map[string]schemaJSONProperty
+
+func (r responseDefinition) GetPrefix() string {
+	panic("implement me")
+}
+
 type responsesSchema struct {
-	Definitions map[string]schemaJSONProperty `json:"definitions"`
+	Definitions responseDefinition `json:"definitions"`
 }
 
 func (r *responsesSchema) Generate(outputDir string) error {
