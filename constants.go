@@ -16,32 +16,33 @@ limitations under the License.
 package main
 
 var (
-	OUTPUT_DIR_NAME string = "output"
+	outputDirName string = "output"
 )
 
+// Output directories and paths to templates
 const (
-	RESP_DIR_NAME         = "responses"
-	RESP_HEADER_TMPL_NAME = "templates/responses.header.template"
-	RESP_TMPL_NAME        = "templates/responses.template"
+	respDirName        = "responses"
+	respHeaderTmplName = "templates/responses.header.template"
+	respTmplName       = "templates/responses.template"
 
-	OBJ_DIR_NAME         = "objects"
-	OBJ_HEADER_TMPL_NAME = "templates/objects.header.template"
-	OBJ_TMPL_NAME        = "templates/objects.template"
+	objDirName        = "objects"
+	objHeaderTmplName = "templates/objects.header.template"
+	objTmplName       = "templates/objects.template"
 
-	METHODS_HEADER_TMPL_NAME = "templates/methods.header.template"
-	METHODS_TMPL_NAME        = "templates/methods.template"
+	methodsHeaderTmplName = "templates/methods.header.template"
+	methodsTmplName       = "templates/methods.template"
 )
 
-// Response types (string option)
+// Response and Object types
 const (
-	SCHEMA_TYPE_INT       string = "integer"
-	SCHEMA_TYPE_STRING    string = "string"
-	SCHEMA_TYPE_ARRAY     string = "array"
-	SCHEMA_TYPE_OBJECT    string = "object"
-	SCHEMA_TYPE_BUILTIN   string = "builtin"
-	SCHEMA_TYPE_BOOLEAN   string = "boolean"
-	SCHEMA_TYPE_INTERFACE string = "interface"
-	SCHEMA_TYPE_NUMBER    string = "number"
-	SCHEMA_TYPE_UNKNOWN   string = "UNKNOWN"
-	SCHEMA_TYPE_MULTIPLE  string = "multiple"
+	schemaTypeInt       string = "integer"
+	schemaTypeString    string = "string"
+	schemaTypeArray     string = "array"
+	schemaTypeObject    string = "object"
+	schemaTypeBuiltin   string = "builtin"
+	schemaTypeBoolean   string = "boolean"
+	schemaTypeInterface string = "interface"
+	schemaTypeNumber    string = "number"
+	schemaTypeUnknown   string = "UNKNOWN"
+	schemaTypeMultiple  string = "multiple"
 )
