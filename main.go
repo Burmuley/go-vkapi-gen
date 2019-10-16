@@ -47,6 +47,10 @@ func readEnvVariables() {
 			vkSchemaFiles[k] = tmp
 		}
 	}
+
+	if tmp := os.Getenv("VK_API_SCHEMA_OUTPUT"); tmp != "" {
+		outputDirName = tmp
+	}
 }
 
 func printEnvInfo() {
