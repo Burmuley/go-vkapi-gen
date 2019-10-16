@@ -19,11 +19,6 @@ import (
 	"fmt"
 )
 
-type schemaMethods struct {
-	Errors  []schemaApiError `json:"errors"`
-	Methods []schemaMethod   `json:"methods"`
-}
-
 type schemaApiError struct {
 	Name  string `json:"name"`
 	Code  int    `json:"code"`
@@ -103,11 +98,11 @@ type schemaMethodItem struct {
 }
 
 func (s schemaMethodItem) IsString() bool {
-	return s.Type == SCHEMA_TYPE_STRING
+	return s.Type == schemaTypeString
 }
 
 func (s schemaMethodItem) IsInt() bool {
-	return s.Type == SCHEMA_TYPE_INT
+	return s.Type == schemaTypeInt
 }
 
 func (s schemaMethodItem) IsBuiltin() bool {
@@ -115,15 +110,15 @@ func (s schemaMethodItem) IsBuiltin() bool {
 }
 
 func (s schemaMethodItem) IsArray() bool {
-	return s.Type == SCHEMA_TYPE_ARRAY
+	return s.Type == schemaTypeArray
 }
 
 func (s schemaMethodItem) IsObject() bool {
-	return s.Type == SCHEMA_TYPE_OBJECT
+	return s.Type == schemaTypeObject
 }
 
 func (s schemaMethodItem) IsBoolean() bool {
-	return s.Type == SCHEMA_TYPE_BOOLEAN
+	return s.Type == schemaTypeBoolean
 }
 
 func (s schemaMethodItem) IsInterface() bool {
@@ -131,7 +126,7 @@ func (s schemaMethodItem) IsInterface() bool {
 }
 
 func (s schemaMethodItem) IsNumber() bool {
-	return s.Type == SCHEMA_TYPE_NUMBER
+	return s.Type == schemaTypeNumber
 }
 
 func (s schemaMethodItem) IsMultiple() bool {
@@ -143,7 +138,7 @@ func (s schemaMethodItem) GetGoType() string {
 		return getObjectTypeName(s.Ref)
 	}
 
-	if fmt.Sprint(s.Type) == SCHEMA_TYPE_ARRAY {
+	if fmt.Sprint(s.Type) == schemaTypeArray {
 		return fmt.Sprintf("[]%s", s.Items.GetGoType())
 	}
 
@@ -156,7 +151,7 @@ func (s schemaMethodItem) IsRequired() bool {
 
 func (s schemaMethodItem) GetType() string {
 	if len(s.Ref) > 0 {
-		return SCHEMA_TYPE_BUILTIN
+		return schemaTypeBuiltin
 	}
 
 	return s.Type

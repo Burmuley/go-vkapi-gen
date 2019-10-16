@@ -16,59 +16,33 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
-	"sort"
-	"sync"
 )
 
 type responsesSchema struct {
 	Definitions map[string]schemaJSONProperty `json:"definitions"`
 }
 
-func responseWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, filePrefix string) {
-	schemaWriter(wg, ch, filePrefix, RESP_DIR_NAME, RESP_HEADER_TMPL_NAME, RESP_TMPL_NAME)
+func (r *responsesSchema) Generate(outputDir string) error {
+	tmplFuncs := make(map[string]interface{})
+	tmplFuncs["convertName"] = convertName
+
+	generateTypes(r.Definitions, outputDir, respDirName, respHeaderTmplName, respTmplName, tmplFuncs)
+
+	return nil
 }
 
-func generateResponses(responses responsesSchema) {
-	logStep("Generating VK API responses")
-	defCats := make(map[string]struct{})
-	defKeys := make([]string, 0)
+func (r *responsesSchema) Parse(fPath string) error {
+	responses, err := loadSchemaFile(fPath)
 
-	for k := range responses.Definitions {
-		defKeys = append(defKeys, k)
-		if _, ok := defCats[getApiNamePrefix(k)]; !ok {
-			defCats[getApiNamePrefix(k)] = struct{}{}
-		}
+	if err != nil {
+		return fmt.Errorf("schema load error: %s", err)
 	}
 
-	// Create channels map and fill it
-	chans := make(map[string]chan map[string]schemaTyperChecker)
-	wg := &sync.WaitGroup{}
-	wg.Add(len(defCats))
-
-	for k := range defCats {
-		chans[k] = make(chan map[string]schemaTyperChecker, 10)
-		go responseWriter(wg, chans[k], k)
+	if err := json.Unmarshal(responses, r); err != nil {
+		return fmt.Errorf("JSON Error: %s", err)
 	}
 
-	// Scan responses.Definitions and distribute data among appropriate channels
-	sort.Strings(defKeys)
-	for _, v := range defKeys {
-		tmp := make(map[string]schemaTyperChecker)
-		tmp[v] = responses.Definitions[v]
-
-		if ch, ok := chans[getApiNamePrefix(v)]; ok {
-			ch <- tmp
-		} else {
-			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", v))
-		}
-	}
-
-	// Close all channels
-	for _, v := range chans {
-		close(v)
-	}
-
-	wg.Wait()
+	return nil
 }

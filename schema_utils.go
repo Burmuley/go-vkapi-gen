@@ -22,12 +22,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"text/template"
 )
 
-func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, prefix, dir, headerTmpl, bodyTmpl string) {
+func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, prefix, dir, headerTmpl, bodyTmpl string, tmplFuncs map[string]interface{}) {
 	var (
 		f   *os.File
 		err error
@@ -36,7 +37,7 @@ func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, pre
 
 	defer wg.Done()
 
-	fName := filepath.Join(OUTPUT_DIR_NAME, dir, fmt.Sprintf("%s.go", prefix))
+	fName := filepath.Join(outputDirName, dir, fmt.Sprintf("%s.go", prefix))
 
 	// Check if a target file exists and remove it if so
 	if checkFileExists(fName) {
@@ -57,18 +58,15 @@ func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, pre
 	defer f.Close()
 
 	// Render header and write to the file
-	tmpl, err := template.New(strings.Split(headerTmpl, "/")[1]).ParseFiles(headerTmpl)
+	tmpl, err := template.New(strings.Split(headerTmpl, "/")[1]).Funcs(tmplFuncs).ParseFiles(headerTmpl)
 	err = tmpl.Execute(&buf, prefix)
 
-	// Read responses definitions from channel and append to the file
-	funcs := make(map[string]interface{})
-	funcs["convertName"] = convertName
-
+	// Read data structures from the channel and append to the file
 	for {
 		d, more := <-ch
 
 		if more {
-			tmpl, err := template.New(strings.Split(bodyTmpl, "/")[1]).Funcs(funcs).ParseFiles(bodyTmpl)
+			tmpl, err := template.New(strings.Split(bodyTmpl, "/")[1]).Funcs(tmplFuncs).ParseFiles(bodyTmpl)
 
 			if err != nil {
 				log.Println(err)
@@ -103,111 +101,41 @@ func schemaWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, pre
 	}
 }
 
-func schemaMethodWriter(wg *sync.WaitGroup, ch chan IMethod, prefix, headerTmpl, bodyTmpl string) {
-	var (
-		f   *os.File
-		err error
-		buf bytes.Buffer
-	)
+func generateTypes(types map[string]schemaJSONProperty, outRootDir, dir, headerTmpl, bodyTmpl string, tmplFuncs map[string]interface{}) {
+	defCats := make(map[string]struct{})
+	defKeys := make([]string, 0)
 
-	defer wg.Done()
-
-	fName := filepath.Join(OUTPUT_DIR_NAME, fmt.Sprintf("%s.go", prefix))
-
-	// Check if a target file exists and remove it if so
-	if checkFileExists(fName) {
-		if err := os.Remove(fName); err != nil {
-			log.Fatal(fmt.Sprintf("file '%s' exists and can't be removed! Error: %s", fName, err))
-			return
+	for k := range types {
+		defKeys = append(defKeys, k)
+		if _, ok := defCats[getApiNamePrefix(k)]; !ok {
+			defCats[getApiNamePrefix(k)] = struct{}{}
 		}
-
-		log.Printf("removed file: %s\n", fName)
 	}
 
-	// Open new file
-	if f, err = os.OpenFile(fName, os.O_CREATE|os.O_RDWR|os.O_SYNC, 0644); err != nil {
-		log.Fatal(err)
-		return
+	// Create channels map and fill it
+	chans := *createChannels(defCats)
+
+	wg := &sync.WaitGroup{}
+	wg.Add(len(defCats))
+
+	for k := range defCats {
+		go schemaWriter(wg, chans[k], k, dir, headerTmpl, bodyTmpl, tmplFuncs)
 	}
 
-	defer f.Close()
-
-	funcs := make(map[string]interface{})
-	funcs["convertName"] = convertName
-	funcs["convertParam"] = convertParam
-	funcs["getMNameSuffix"] = getApiMethodNameSuffix
-	funcs["getMNamePrefix"] = getApiMethodNamePrefix
-	funcs["deco"] = func(method IMethod, count int) struct {
-		M IMethod
-		C int
-	} {
-		return struct {
-			M IMethod
-			C int
-		}{M: method, C: count}
-	}
-	funcs["getFLetter"] = func(s string) string {
-		return string(s[0])
-	}
-
-	// Render header and write to the file
-	tmpl, err := template.New(strings.Split(headerTmpl, "/")[1]).Funcs(funcs).ParseFiles(headerTmpl)
-	err = tmpl.Execute(&buf, prefix)
-
-	// Read responses definitions from channel and append to the file
-
-	for {
-		d, more := <-ch
-
-		if more {
-			tmpl, err := template.New(strings.Split(bodyTmpl, "/")[1]).Funcs(funcs).ParseFiles(bodyTmpl)
-
-			if err != nil {
-				log.Println(err)
-				return
-			}
-
-			err = tmpl.Execute(&buf, d)
-
-			if err != nil {
-				log.Println(err)
-			}
+	// Scan types and distribute data among appropriate channels
+	sort.Strings(defKeys)
+	for _, v := range defKeys {
+		if ch, ok := chans[getApiNamePrefix(v)]; ok {
+			ch <- map[string]interface{}{v: types[v]}
 		} else {
-			bb := buf.Bytes()
-			if fmtCode, err := format.Source(bb); err != nil {
-				log.Printf("[[%s]] error formatting code: %s. Writing code as is...", fName, err)
-				if n, e := f.Write(bb); e != nil {
-					log.Printf("error writing %s: %s", fName, e)
-				} else {
-					log.Printf("successfully written %d bytes (unformatted) to %s.", n, fName)
-				}
-			} else {
-				if n, e := f.Write(fmtCode); e != nil {
-					log.Printf("error writing %s: %s", fName, e)
-				} else {
-					log.Printf("successfully written %d bytes to %s", n, fName)
-				}
-
-			}
-
-			return
+			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", v))
 		}
 	}
-}
 
-func detectGoType(s string) string {
-	switch s {
-	case SCHEMA_TYPE_NUMBER:
-		return "float64"
-	case SCHEMA_TYPE_INTERFACE:
-		return "interface{}"
-	case SCHEMA_TYPE_INT:
-		return "int"
-	case SCHEMA_TYPE_BOOLEAN:
-		return "bool"
-	case SCHEMA_TYPE_STRING:
-		return "string"
+	// Close all channels
+	for _, v := range chans {
+		close(v)
 	}
 
-	return s
+	wg.Wait()
 }

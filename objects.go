@@ -16,59 +16,33 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
-	"sort"
-	"sync"
 )
 
 type objectsSchema struct {
 	Definitions map[string]schemaJSONProperty `json:"definitions"`
 }
 
-func objectWriter(wg *sync.WaitGroup, ch chan map[string]schemaTyperChecker, filePrefix string) {
-	schemaWriter(wg, ch, filePrefix, OBJ_DIR_NAME, OBJ_HEADER_TMPL_NAME, OBJ_TMPL_NAME)
+func (o *objectsSchema) Generate(outputDir string) error {
+	tmplFuncs := make(map[string]interface{})
+	tmplFuncs["convertName"] = convertName
+
+	generateTypes(o.Definitions, outputDir, objDirName, objHeaderTmplName, objTmplName, tmplFuncs)
+
+	return nil
 }
 
-func generateObjects(objects objectsSchema) {
-	logStep("Generating VK API objects")
-	defCats := make(map[string]struct{})
-	defKeys := make([]string, 0)
+func (o *objectsSchema) Parse(fPath string) error {
+	objects, err := loadSchemaFile(fPath)
 
-	for k := range objects.Definitions {
-		defKeys = append(defKeys, k)
-		if _, ok := defCats[getApiNamePrefix(k)]; !ok {
-			defCats[getApiNamePrefix(k)] = struct{}{}
-		}
+	if err != nil {
+		return fmt.Errorf("schema load error: %s", err)
 	}
 
-	// Create channels map and fill it
-	chans := make(map[string]chan map[string]schemaTyperChecker)
-	wg := &sync.WaitGroup{}
-	wg.Add(len(defCats))
-
-	for k := range defCats {
-		chans[k] = make(chan map[string]schemaTyperChecker, 10)
-		go objectWriter(wg, chans[k], k)
+	if err := json.Unmarshal(objects, o); err != nil {
+		return fmt.Errorf("JSON Error: %s", err)
 	}
 
-	// Scan objects.Definitions and distribute data among appropriate channels
-	sort.Strings(defKeys)
-	for _, v := range defKeys {
-		tmp := make(map[string]schemaTyperChecker)
-		tmp[v] = objects.Definitions[v]
-
-		if ch, ok := chans[getApiNamePrefix(v)]; ok {
-			ch <- tmp
-		} else {
-			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", v))
-		}
-	}
-
-	// Close all channels
-	for _, v := range chans {
-		close(v)
-	}
-
-	wg.Wait()
+	return nil
 }
