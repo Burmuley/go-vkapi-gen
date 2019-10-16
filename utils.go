@@ -106,12 +106,6 @@ func loadSchemaFile(path string) ([]byte, error) {
 	return readHTTPSchemaFile(path)
 }
 
-func checkErr(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
 func getObjectTypeName(s string) string {
 	var prefix string
 
@@ -130,6 +124,7 @@ func getObjectTypeName(s string) string {
 	return strings.Join([]string{prefix, convertName(str[len(str)-1])}, ".")
 }
 
+// Logging helpers
 func logString(s string) {
 	log.Println(s)
 }
@@ -151,10 +146,11 @@ func logStep(s string) {
 }
 
 func checkFileExists(f string) bool {
-	finf, _ := os.Stat(f)
-	return finf != nil
+	fInfo, _ := os.Stat(f)
+	return fInfo != nil
 }
 
+// Files operations
 func copyStatic(outputDir string) error {
 	logStep(fmt.Sprintf("Copying static content from `static` directory to `%s`", outputDir))
 	staticDir := "./static/"
@@ -205,17 +201,16 @@ func copyFile(src, dst string) error {
 		srcInfo os.FileInfo
 	)
 
+	defer srcFile.Close()
+	defer dstFile.Close()
+
 	if srcFile, err = os.Open(src); err != nil {
 		return err
 	}
 
-	defer srcFile.Close()
-
 	if dstFile, err = os.Create(dst); err != nil {
 		return err
 	}
-
-	defer dstFile.Close()
 
 	if _, err = io.Copy(dstFile, srcFile); err != nil {
 		return err
@@ -226,4 +221,31 @@ func copyFile(src, dst string) error {
 	}
 
 	return os.Chmod(dst, srcInfo.Mode())
+}
+
+func detectGoType(s string) string {
+	switch s {
+	case schemaTypeNumber:
+		return "float64"
+	case schemaTypeInterface:
+		return "interface{}"
+	case schemaTypeInt:
+		return "int"
+	case schemaTypeBoolean:
+		return "bool"
+	case schemaTypeString:
+		return "string"
+	}
+
+	return s
+}
+
+func createChannels(m map[string]struct{}) *map[string]chan interface{} {
+	chans := make(map[string]chan interface{}, len(m))
+
+	for k := range m {
+		chans[k] = make(chan interface{}, 10)
+	}
+
+	return &chans
 }

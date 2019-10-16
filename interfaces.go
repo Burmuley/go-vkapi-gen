@@ -58,11 +58,6 @@ type IMethodItem interface {
 }
 
 type IGenerator interface {
-	GetWriter() func()
 	Parse(fPath string) error
 	Generate(outputDir string) error
-}
-
-type ICommon interface {
-	GetPrefixes() map[string]struct{}
 }

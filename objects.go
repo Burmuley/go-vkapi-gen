@@ -20,22 +20,8 @@ import (
 	"fmt"
 )
 
-type objectDefinitions map[string]schemaJSONProperty
-
-func (o objectDefinitions) GetPrefixes() (res map[string]struct{}) {
-	res = make(map[string]struct{})
-
-	for k := range o {
-		if _, ok := res[getApiNamePrefix(k)]; !ok {
-			res[getApiNamePrefix(k)] = struct{}{}
-		}
-	}
-
-	return
-}
-
 type objectsSchema struct {
-	Definitions objectDefinitions `json:"definitions"`
+	Definitions map[string]schemaJSONProperty `json:"definitions"`
 }
 
 func (o *objectsSchema) Generate(outputDir string) error {
@@ -47,18 +33,12 @@ func (o *objectsSchema) Generate(outputDir string) error {
 	return nil
 }
 
-func (o *objectsSchema) GetWriter() func() {
-	return func() { return }
-}
-
 func (o *objectsSchema) Parse(fPath string) error {
 	objects, err := loadSchemaFile(fPath)
 
 	if err != nil {
 		return fmt.Errorf("schema load error: %s", err)
 	}
-
-	//jsonObjects := objectsSchema{}
 
 	if err := json.Unmarshal(objects, o); err != nil {
 		return fmt.Errorf("JSON Error: %s", err)

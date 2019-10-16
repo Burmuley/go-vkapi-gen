@@ -28,22 +28,6 @@ type schemaMethods struct {
 	Methods []schemaMethod   `json:"methods"`
 }
 
-func (s schemaMethods) GetPrefixes() (res map[string]struct{}) {
-	res = make(map[string]struct{})
-
-	for k := range s.Methods {
-		if _, ok := res[getApiMethodNamePrefix(s.Methods[k].GetName())]; !ok {
-			res[getApiMethodNamePrefix(s.Methods[k].GetName())] = struct{}{}
-		}
-	}
-
-	return
-}
-
-func (s *schemaMethods) GetWriter() func() {
-	panic("implement me")
-}
-
 func (s *schemaMethods) Parse(fPath string) error {
 	methods, err := loadSchemaFile(fPath)
 
@@ -81,12 +65,7 @@ func generateMethods(methods []IMethod) {
 	}
 
 	// Create channels map and fill it
-	//chans := *createChannels(methodsCats)
-	chans := make(map[string]chan interface{}, len(methodsCats))
-
-	for k := range methodsCats {
-		chans[k] = make(chan interface{}, 10)
-	}
+	chans := *createChannels(methodsCats)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(len(methodsCats))
@@ -110,18 +89,15 @@ func generateMethods(methods []IMethod) {
 	}
 
 	for k := range methodsCats {
-		//go methodsWriter(wg, chans[k], k)
 		go schemaWriter(wg, chans[k], k, "/", methodsHeaderTmplName, methodsTmplName, funcs)
 	}
 
 	//Scan methods and distribute data among appropriate channels
 	sort.Slice(methods, func(i, j int) bool { return methods[i].GetName() < methods[j].GetName() })
-	for _, v := range methods {
-		var tmp IMethod
-		tmp = v
 
+	for _, v := range methods {
 		if ch, ok := chans[getApiMethodNamePrefix(v.GetName())]; ok {
-			ch <- tmp
+			ch <- v
 		} else {
 			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", getApiMethodNamePrefix(v.GetName())))
 		}

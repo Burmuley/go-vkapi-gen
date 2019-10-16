@@ -20,22 +20,8 @@ import (
 	"fmt"
 )
 
-type responseDefinition map[string]schemaJSONProperty
-
-func (r responseDefinition) GetPrefixes() (res map[string]struct{}) {
-	res = make(map[string]struct{})
-
-	for k := range r {
-		if _, ok := res[getApiNamePrefix(k)]; !ok {
-			res[getApiNamePrefix(k)] = struct{}{}
-		}
-	}
-
-	return
-}
-
 type responsesSchema struct {
-	Definitions responseDefinition `json:"definitions"`
+	Definitions map[string]schemaJSONProperty `json:"definitions"`
 }
 
 func (r *responsesSchema) Generate(outputDir string) error {
@@ -45,10 +31,6 @@ func (r *responsesSchema) Generate(outputDir string) error {
 	generateTypes(r.Definitions, outputDir, respDirName, respHeaderTmplName, respTmplName, tmplFuncs)
 
 	return nil
-}
-
-func (r *responsesSchema) GetWriter() func() {
-	return func() { return }
 }
 
 func (r *responsesSchema) Parse(fPath string) error {
