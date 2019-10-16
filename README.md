@@ -33,10 +33,13 @@ The tool by default use these inputs:
 * `responses` - [https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/responses.json](https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/responses.json)
 * `methods` - [https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/methods.json](https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/methods.json)
 
+Default output directory is `output` located in the repository root. 
+
 These settings can be overridden by setting corresponding environment variables:
 * to override `objects` - set `VK_API_SCHEMA_OBJECTS` environment variable  
 * to override `responses` - set `VK_API_SCHEMA_RESPONSES` environment variable
 * to override `methods` - set `VK_API_SCHEMA_METHODS`  environment variable
+* to override `output` directory location - set `VK_API_SCHEMA_OUTPUT` environment variable
 
 Variables values can be of two types:
 1. HTTP URL to the target file (doesn't support any kind of authentication)
