@@ -16,29 +16,46 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"sort"
 	"sync"
 )
 
-func methodsWriter(wg *sync.WaitGroup, ch chan IMethod, filePrefix string) {
-	schemaMethodWriter(wg, ch, filePrefix, METHODS_HEADER_TMPL_NAME, METHODS_TMPL_NAME)
+type schemaMethods struct {
+	Errors  []schemaApiError `json:"errors"`
+	Methods []schemaMethod   `json:"methods"`
 }
 
-//func createChannels(chList map[string]struct{}) (res *map[string]chan map[string]schemaTyperChecker) {
-//	// Create channels map and fill it
-//	chans := make(map[string]chan map[string]schemaTyperChecker, len(chList))
-//
-//	for k := range chList {
-//		chans[k] = make(chan map[string]schemaTyperChecker, 10)
-//	}
-//
-//	return &chans
-//}
+func (s *schemaMethods) Parse(fPath string) error {
+	methods, err := loadSchemaFile(fPath)
+
+	if err != nil {
+		return fmt.Errorf("schema load error: %s", err)
+	}
+
+	if err := json.Unmarshal(methods, s); err != nil {
+		return fmt.Errorf("JSON Error: %s", err)
+	}
+
+	return nil
+}
+
+func (s *schemaMethods) Generate(outputDir string) error {
+
+	iMethods := make([]IMethod, 0)
+
+	for _, v := range s.Methods {
+		iMethods = append(iMethods, v)
+	}
+
+	generateMethods(iMethods)
+
+	return nil
+}
 
 func generateMethods(methods []IMethod) {
-	logStep("Generating VK API methods")
 	methodsCats := make(map[string]struct{})
 
 	for k := range methods {
@@ -48,28 +65,39 @@ func generateMethods(methods []IMethod) {
 	}
 
 	// Create channels map and fill it
-	//chans := *createChannels(methodsCats)
-	chans := make(map[string]chan IMethod, len(methodsCats))
-
-	for k := range methodsCats {
-		chans[k] = make(chan IMethod, 10)
-	}
+	chans := *createChannels(methodsCats)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(len(methodsCats))
 
+	funcs := make(map[string]interface{})
+	funcs["convertName"] = convertName
+	funcs["convertParam"] = convertParam
+	funcs["getMNameSuffix"] = getApiMethodNameSuffix
+	funcs["getMNamePrefix"] = getApiMethodNamePrefix
+	funcs["deco"] = func(method IMethod, count int) struct {
+		M IMethod
+		C int
+	} {
+		return struct {
+			M IMethod
+			C int
+		}{M: method, C: count}
+	}
+	funcs["getFLetter"] = func(s string) string {
+		return string(s[0])
+	}
+
 	for k := range methodsCats {
-		go methodsWriter(wg, chans[k], k)
+		go schemaWriter(wg, chans[k], k, "/", methodsHeaderTmplName, methodsTmplName, funcs)
 	}
 
 	//Scan methods and distribute data among appropriate channels
 	sort.Slice(methods, func(i, j int) bool { return methods[i].GetName() < methods[j].GetName() })
-	for _, v := range methods {
-		var tmp IMethod
-		tmp = v
 
+	for _, v := range methods {
 		if ch, ok := chans[getApiMethodNamePrefix(v.GetName())]; ok {
-			ch <- tmp
+			ch <- v
 		} else {
 			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", getApiMethodNamePrefix(v.GetName())))
 		}

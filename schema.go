@@ -43,9 +43,9 @@ func (s *schemaTypeWrapper) UnmarshalJSON(b []byte) error {
 	case string:
 		s.Type = fmt.Sprintf("%s", tmp)
 	case []interface{}:
-		s.Type = SCHEMA_TYPE_MULTIPLE
+		s.Type = schemaTypeMultiple
 	default:
-		s.Type = SCHEMA_TYPE_UNKNOWN
+		s.Type = schemaTypeUnknown
 		return schemaError{
 			errInfo: string(b),
 			err:     fmt.Errorf("%s", "unknown schema type"),
@@ -126,13 +126,13 @@ func (s schemaJSONProperty) GetType() string {
 		return fmt.Sprint(s.Type)
 	} else {
 		if len(s.AllOf) > 0 || len(s.OneOf) > 0 || len(s.Properties) > 0 {
-			return SCHEMA_TYPE_OBJECT
+			return schemaTypeObject
 		} else if len(s.Ref) > 0 {
-			return SCHEMA_TYPE_BUILTIN
+			return schemaTypeBuiltin
 		}
 	}
 
-	return SCHEMA_TYPE_UNKNOWN
+	return schemaTypeUnknown
 }
 
 func (s schemaJSONProperty) GetGoType(stripPrefix bool) (tmp []string) {
@@ -157,7 +157,7 @@ func (s schemaJSONProperty) GetGoType(stripPrefix bool) (tmp []string) {
 		return tmp
 	}
 
-	if fmt.Sprint(s.Type) == SCHEMA_TYPE_ARRAY {
+	if fmt.Sprint(s.Type) == schemaTypeArray {
 		return s.Items.GetGoType(stripPrefix)
 	}
 
@@ -210,37 +210,37 @@ func (s schemaJSONProperty) GetProperties(stripPrefix bool) (tmp map[string]sche
 }
 
 func (s schemaJSONProperty) IsString() bool {
-	return s.GetType() == SCHEMA_TYPE_STRING
+	return s.GetType() == schemaTypeString
 }
 
 func (s schemaJSONProperty) IsInt() bool {
-	return s.GetType() == SCHEMA_TYPE_INT
+	return s.GetType() == schemaTypeInt
 }
 
 func (s schemaJSONProperty) IsBuiltin() bool {
-	return s.GetType() == SCHEMA_TYPE_BUILTIN
+	return s.GetType() == schemaTypeBuiltin
 }
 
 func (s schemaJSONProperty) IsArray() bool {
-	return s.GetType() == SCHEMA_TYPE_ARRAY
+	return s.GetType() == schemaTypeArray
 }
 
 func (s schemaJSONProperty) IsObject() bool {
-	return s.GetType() == SCHEMA_TYPE_OBJECT
+	return s.GetType() == schemaTypeObject
 }
 
 func (s schemaJSONProperty) IsBoolean() bool {
-	return s.GetType() == SCHEMA_TYPE_BOOLEAN
+	return s.GetType() == schemaTypeBoolean
 }
 
 func (s schemaJSONProperty) IsInterface() bool {
-	return s.GetType() == SCHEMA_TYPE_INTERFACE
+	return s.GetType() == schemaTypeInterface
 }
 
 func (s schemaJSONProperty) IsNumber() bool {
-	return s.GetType() == SCHEMA_TYPE_NUMBER
+	return s.GetType() == schemaTypeNumber
 }
 
 func (s schemaJSONProperty) IsMultiple() bool {
-	return s.GetType() == SCHEMA_TYPE_MULTIPLE
+	return s.GetType() == schemaTypeMultiple
 }
