@@ -229,7 +229,7 @@ func detectGoType(s string) string {
 		return "int"
 	case schemaTypeBoolean:
 		return "bool"
-	case schemaTypeString:
+	case schemaTypeString, schemaTypeMultiple:
 		return "string"
 	}
 
