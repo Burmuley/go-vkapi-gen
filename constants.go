@@ -33,6 +33,11 @@ const (
 	methodsTmplName       = "templates/methods.template"
 )
 
+const (
+	objectsImportPath   = "gitlab.com/Burmuley/go-vkapi/objects"
+	responsesImportPath = "gitlab.com/Burmuley/go-vkapi/responses"
+)
+
 // Response and Object types
 const (
 	schemaTypeInt       string = "integer"

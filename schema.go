@@ -21,6 +21,13 @@ import (
 	"strings"
 )
 
+type templateImports struct {
+	Imports map[string]struct{}
+	Prefix  string
+}
+
+type schemaPrefixList map[string]templateImports
+
 //////////////////////////////////////////////////////////////////////
 // JSON schema `type` field wrapper
 //////////////////////////////////////////////////////////////////////
