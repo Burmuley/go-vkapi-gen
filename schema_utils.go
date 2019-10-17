@@ -28,7 +28,7 @@ import (
 	"text/template"
 )
 
-func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, prefix, dir, headerTmpl, bodyTmpl string, tmplFuncs map[string]interface{}) {
+func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, imports templateImports, prefix, dir, headerTmpl, bodyTmpl string, tmplFuncs map[string]interface{}) {
 	var (
 		f   *os.File
 		err error
@@ -59,7 +59,7 @@ func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, prefix, dir, headerTm
 
 	// Render header and write to the file
 	tmpl, err := template.New(strings.Split(headerTmpl, "/")[1]).Funcs(tmplFuncs).ParseFiles(headerTmpl)
-	err = tmpl.Execute(&buf, prefix)
+	err = tmpl.Execute(&buf, imports)
 
 	// Read data structures from the channel and append to the file
 	for {
@@ -102,13 +102,18 @@ func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, prefix, dir, headerTm
 }
 
 func generateTypes(types map[string]schemaJSONProperty, outRootDir, dir, headerTmpl, bodyTmpl string, tmplFuncs map[string]interface{}) {
-	defCats := make(map[string]struct{})
+	//defCats := make(map[string]struct{})
+	defCats := make(schemaPrefixList)
 	defKeys := make([]string, 0)
 
 	for k := range types {
 		defKeys = append(defKeys, k)
-		if _, ok := defCats[getApiNamePrefix(k)]; !ok {
-			defCats[getApiNamePrefix(k)] = struct{}{}
+		dPref := getApiNamePrefix(k)
+		if _, ok := defCats[dPref]; !ok {
+			defCats[dPref] = templateImports{
+				Imports: map[string]struct{}{"fmt": struct{}{}, responsesImportPath: struct{}{}},
+				Prefix:  dPref,
+			}
 		}
 	}
 
@@ -119,7 +124,7 @@ func generateTypes(types map[string]schemaJSONProperty, outRootDir, dir, headerT
 	wg.Add(len(defCats))
 
 	for k := range defCats {
-		go schemaWriter(wg, chans[k], k, dir, headerTmpl, bodyTmpl, tmplFuncs)
+		go schemaWriter(wg, chans[k], defCats[k], k, dir, headerTmpl, bodyTmpl, tmplFuncs)
 	}
 
 	// Scan types and distribute data among appropriate channels

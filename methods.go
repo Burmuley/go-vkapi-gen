@@ -56,11 +56,24 @@ func (s *schemaMethods) Generate(outputDir string) error {
 }
 
 func generateMethods(methods []IMethod) {
-	methodsCats := make(map[string]struct{})
+	//methodsCats := make(map[string]struct{})
+	methodsCats := make(schemaPrefixList)
 
 	for k := range methods {
-		if _, ok := methodsCats[getApiMethodNamePrefix(methods[k].GetName())]; !ok {
-			methodsCats[getApiMethodNamePrefix(methods[k].GetName())] = struct{}{}
+		mPref := getApiMethodNamePrefix(methods[k].GetName())
+
+		if _, ok := methodsCats[mPref]; !ok {
+			methodsCats[mPref] = templateImports{
+				Imports: map[string]struct{}{responsesImportPath: struct{}{}},
+				Prefix:  mPref,
+			}
+		}
+
+		for _, v := range methods[k].GetParameters() {
+			if v.IsBuiltin() {
+				methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
+				break
+			}
 		}
 	}
 
@@ -89,7 +102,7 @@ func generateMethods(methods []IMethod) {
 	}
 
 	for k := range methodsCats {
-		go schemaWriter(wg, chans[k], k, "/", methodsHeaderTmplName, methodsTmplName, funcs)
+		go schemaWriter(wg, chans[k], methodsCats[k], k, "/", methodsHeaderTmplName, methodsTmplName, funcs)
 	}
 
 	//Scan methods and distribute data among appropriate channels
