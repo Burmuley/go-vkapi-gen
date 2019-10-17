@@ -129,10 +129,6 @@ func logString(s string) {
 	log.Println(s)
 }
 
-func logJSONError(err error) {
-	logString(fmt.Sprintf("JSON Error:%#v\n", err))
-}
-
 func logError(err error) {
 	logString(fmt.Sprintf("ERROR: %#v\n", err))
 }
@@ -240,7 +236,7 @@ func detectGoType(s string) string {
 	return s
 }
 
-func createChannels(m map[string]struct{}) *map[string]chan interface{} {
+func createChannels(m schemaPrefixList) *map[string]chan interface{} {
 	chans := make(map[string]chan interface{}, len(m))
 
 	for k := range m {

@@ -23,15 +23,16 @@ limitations under the License.
 package go_vkapi
 
 import (
-    "gitlab.com/Burmuley/go-vkapi/objects"
-    "gitlab.com/Burmuley/go-vkapi/responses"
+{{ range $k, $v := .Imports -}}
+    {{ printf "\"%s\"" $k }}
+{{end}}
 )
 
-type {{ convertName . }} struct {
+type {{ convertName .Prefix }} struct {
     *VKApi
 }
 
 /////////////////////////////////////////////////////////////
-// `{{ convertName . }}` methods
+// `{{ convertName .Prefix }}` methods
 /////////////////////////////////////////////////////////////
 
