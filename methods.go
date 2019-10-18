@@ -56,6 +56,20 @@ func (s *schemaMethods) Generate(outputDir string) error {
 	return nil
 }
 
+func checkImports(items []IMethodItem, prefix string) bool {
+	for _, v := range items {
+		if v.IsBuiltin() {
+			return true
+		} else if v.IsArray() {
+			if strings.Count(v.GetGoType(), prefix) > 0 {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func generateMethods(methods []IMethod) {
 	//methodsCats := make(map[string]struct{})
 	methodsCats := make(schemaPrefixList)
@@ -70,16 +84,14 @@ func generateMethods(methods []IMethod) {
 			}
 		}
 
-		for _, v := range methods[k].GetParameters() {
-			if v.IsBuiltin() {
-				methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
-				break
-			} else if v.IsArray() {
-				if strings.Count(v.GetGoType(), "objects.") > 0 {
-					methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
-					break
-				}
-			}
+		// Inspect parameters and fill imports
+		if checkImports(methods[k].GetParameters(), "objects.") {
+			methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
+		}
+
+		// Inspect responses and fill imports
+		if checkImports(methods[k].GetResponses(), "responses.") {
+			methodsCats[mPref].Imports[responsesImportPath] = struct{}{}
 		}
 	}
 
