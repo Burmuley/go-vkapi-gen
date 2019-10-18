@@ -115,11 +115,11 @@ func getObjectTypeName(s string) string {
 		prefix = strings.Split(p[0], ".")[0]
 	}
 
-	prefix = strings.Join([]string{"*", prefix}, "")
+	//prefix = strings.Join([]string{"*", prefix}, "")
 
 	str := strings.Split(s, "/")
 
-	if len(prefix) == 1 {
+	if len(prefix) == 0 {
 		return convertName(str[len(str)-1])
 	}
 

@@ -93,7 +93,6 @@ func generateMethods(methods []IMethod) {
 		if checkImports(methods[k].GetResponses(), "objects.") {
 			methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
 		}
-
 	}
 
 	// Create channels map and fill it
