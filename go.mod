@@ -1,3 +1,3 @@
-module go-vkapi-gen
+module gitlab.com/Burmuley/go-vkapi-gen
 
 go 1.13

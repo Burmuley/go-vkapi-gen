@@ -115,9 +115,11 @@ func getObjectTypeName(s string) string {
 		prefix = strings.Split(p[0], ".")[0]
 	}
 
+	prefix = strings.Join([]string{"*", prefix}, "")
+
 	str := strings.Split(s, "/")
 
-	if len(prefix) == 0 {
+	if len(prefix) == 1 {
 		return convertName(str[len(str)-1])
 	}
 
@@ -223,7 +225,7 @@ func detectGoType(s string) string {
 	switch s {
 	case schemaTypeNumber:
 		return "float64"
-	case schemaTypeInterface:
+	case schemaTypeInterface, schemaTypeObject:
 		return "interface{}"
 	case schemaTypeInt:
 		return "int"

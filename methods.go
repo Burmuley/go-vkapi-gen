@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strings"
 	"sync"
 )
 
@@ -73,6 +74,11 @@ func generateMethods(methods []IMethod) {
 			if v.IsBuiltin() {
 				methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
 				break
+			} else if v.IsArray() {
+				if strings.Count(v.GetGoType(), "objects.") > 0 {
+					methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
+					break
+				}
 			}
 		}
 	}
