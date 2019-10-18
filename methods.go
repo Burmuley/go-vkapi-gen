@@ -82,18 +82,15 @@ func generateMethods(methods []IMethod) {
 
 		// Inspect parameters and fill imports
 		if checkImports(methods[k].GetParameters(), "objects.") {
-			fmt.Printf("[GP] Adding objects import for %s\n", mPref)
 			methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
 		}
 
 		// Inspect responses and fill imports
 		if checkImports(methods[k].GetResponses(), "responses.") {
-			fmt.Printf("[GR] Adding responses import for %s\n", mPref)
 			methodsCats[mPref].Imports[responsesImportPath] = struct{}{}
 		}
 
 		if checkImports(methods[k].GetResponses(), "objects.") {
-			fmt.Printf("[GR] Adding objects import for %s\n", mPref)
 			methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
 		}
 
