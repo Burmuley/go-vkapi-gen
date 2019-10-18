@@ -30,9 +30,9 @@ import (
 func convertName(jsonName string) string {
 	nameArr := strings.Split(jsonName, "_")
 
-	if nameArr[len(nameArr)-1] == "response" {
-		nameArr = nameArr[:len(nameArr)-1]
-	}
+	//if nameArr[len(nameArr)-1] == "response" {
+	//	nameArr = nameArr[:len(nameArr)-1]
+	//}
 
 	// Convert numbers to words according to Golang naming convention
 	if strings.Index(nameArr[0], "2") == 0 {
@@ -44,6 +44,10 @@ func convertName(jsonName string) string {
 	}
 
 	return strings.Join(nameArr, "")
+}
+
+func cutSuffix(str, suf string) string {
+	return strings.TrimRight(str, suf)
 }
 
 func convertParam(param string) string {
