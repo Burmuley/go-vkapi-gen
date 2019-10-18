@@ -58,12 +58,8 @@ func (s *schemaMethods) Generate(outputDir string) error {
 
 func checkImports(items []IMethodItem, prefix string) bool {
 	for _, v := range items {
-		if v.IsBuiltin() {
+		if (v.IsBuiltin() || v.IsArray()) && strings.Count(v.GetGoType(), prefix) > 0 {
 			return true
-		} else if v.IsArray() {
-			if strings.Count(v.GetGoType(), prefix) > 0 {
-				return true
-			}
 		}
 	}
 
@@ -79,20 +75,28 @@ func generateMethods(methods []IMethod) {
 
 		if _, ok := methodsCats[mPref]; !ok {
 			methodsCats[mPref] = templateImports{
-				Imports: map[string]struct{}{responsesImportPath: struct{}{}},
+				Imports: make(map[string]struct{}),
 				Prefix:  mPref,
 			}
 		}
 
 		// Inspect parameters and fill imports
 		if checkImports(methods[k].GetParameters(), "objects.") {
+			fmt.Printf("[GP] Adding objects import for %s\n", mPref)
 			methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
 		}
 
 		// Inspect responses and fill imports
 		if checkImports(methods[k].GetResponses(), "responses.") {
+			fmt.Printf("[GR] Adding responses import for %s\n", mPref)
 			methodsCats[mPref].Imports[responsesImportPath] = struct{}{}
 		}
+
+		if checkImports(methods[k].GetResponses(), "objects.") {
+			fmt.Printf("[GR] Adding objects import for %s\n", mPref)
+			methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
+		}
+
 	}
 
 	// Create channels map and fill it
