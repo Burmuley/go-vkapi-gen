@@ -98,7 +98,7 @@ type schemaMethodItem struct {
 }
 
 func (s schemaMethodItem) IsString() bool {
-	return s.Type == schemaTypeString
+	return s.Type == schemaTypeString && len(s.Ref) == 0
 }
 
 func (s schemaMethodItem) IsInt() bool {

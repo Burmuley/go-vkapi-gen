@@ -22,7 +22,12 @@ limitations under the License.
 
 package responses
 
-import "gitlab.com/Burmuley/go-vkapi/objects"
+import (
+{{ range $k, $v := .Imports -}}
+    {{ printf "\"%s\"" $k }}
+{{end}}
+)
+
 
 /////////////////////////////////////////////////////////////
 // `{{.Prefix}}` group of responses

@@ -30,20 +30,29 @@ import (
 func convertName(jsonName string) string {
 	nameArr := strings.Split(jsonName, "_")
 
-	if nameArr[len(nameArr)-1] == "response" {
-		nameArr = nameArr[:len(nameArr)-1]
-	}
-
 	// Convert numbers to words according to Golang naming convention
 	if strings.Index(nameArr[0], "2") == 0 {
 		nameArr[0] = strings.ReplaceAll(nameArr[0], "2", "two")
 	}
 
 	for k, v := range nameArr {
-		nameArr[k] = strings.Title(v)
+		nameArr[k] = strings.Title(strings.ToLower(v))
 	}
 
 	return strings.Join(nameArr, "")
+}
+
+func cutSuffix(str, suf string) string {
+	// don't cut "Response" suffix if it's from objects package
+	if strings.Count(str, "objects.") > 0 && suf == "Response" {
+		return str
+	}
+
+	return strings.TrimRight(str, suf)
+}
+
+func cutPrefix(str, pref string) string {
+	return strings.TrimLeft(str, pref)
 }
 
 func convertParam(param string) string {
@@ -114,6 +123,8 @@ func getObjectTypeName(s string) string {
 	if len(p[0]) > 0 {
 		prefix = strings.Split(p[0], ".")[0]
 	}
+
+	//prefix = strings.Join([]string{"*", prefix}, "")
 
 	str := strings.Split(s, "/")
 
@@ -223,7 +234,7 @@ func detectGoType(s string) string {
 	switch s {
 	case schemaTypeNumber:
 		return "float64"
-	case schemaTypeInterface:
+	case schemaTypeInterface, schemaTypeObject:
 		return "interface{}"
 	case schemaTypeInt:
 		return "int"
@@ -244,4 +255,36 @@ func createChannels(m schemaPrefixList) *map[string]chan interface{} {
 	}
 
 	return &chans
+}
+
+func checkMImports(items []IMethodItem, prefix string) bool {
+	for _, v := range items {
+		if (v.IsBuiltin() || v.IsArray()) && strings.Count(v.GetGoType(), prefix) > 0 {
+			return true
+		}
+	}
+
+	return false
+}
+
+func checkTImports(item schemaJSONProperty, prefix string) bool {
+	if item.IsBuiltin() && strings.Count(item.GetGoType(false)[0], prefix) > 0 {
+		return true
+	}
+
+	if item.IsArray() && strings.Count(item.Items.GetGoType(false)[0], prefix) > 0 {
+		return true
+	}
+
+	if item.IsObject() {
+		for _, v := range item.GetProperties(false) {
+			if (v.IsBuiltin() || v.IsArray()) && strings.Count(v.GetGoType(false)[0], prefix) > 0 {
+				return true
+			} else if v.IsObject() {
+				return checkTImports(v, prefix)
+			}
+		}
+	}
+
+	return false
 }
