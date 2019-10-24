@@ -14,7 +14,7 @@
 {{range $key, $value := . -}}
 // {{cutSuffix (convertName $key) "Response"}} type represents `{{$key}}` API response object
 {{ $response := (index ($value.GetProperties false) "response") -}}
-{{if or $response.IsInt $response.IsString $response.IsBuiltin $response.IsArray $response.IsNumber $response.IsInterface -}}
+{{if or $response.IsInt $response.IsString $response.IsBuiltin $response.IsArray $response.IsNumber $response.IsInterface $response.IsBoolean -}}
 type {{cutSuffix (convertName $key) "Response"}} {{template "go_type" $response}}{{ if (len $response.GetDescription) gt 0}} // {{$response.GetDescription}}{{end}}
 {{else if $response.IsObject -}}
 type {{cutSuffix (convertName $key) "Response"}} struct {

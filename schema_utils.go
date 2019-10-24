@@ -111,9 +111,17 @@ func generateTypes(types map[string]schemaJSONProperty, outRootDir, dir, headerT
 		dPref := getApiNamePrefix(k)
 		if _, ok := defCats[dPref]; !ok {
 			defCats[dPref] = templateImports{
-				Imports: map[string]struct{}{"fmt": struct{}{}, responsesImportPath: struct{}{}},
+				Imports: make(map[string]struct{}),
 				Prefix:  dPref,
 			}
+		}
+
+		if checkTImports(types[k], "objects.") {
+			defCats[dPref].Imports[objectsImportPath] = struct{}{}
+		}
+
+		if checkTImports(types[k], "responses.") {
+			defCats[dPref].Imports[responsesImportPath] = struct{}{}
 		}
 	}
 

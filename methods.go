@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"log"
 	"sort"
-	"strings"
 	"sync"
 )
 
@@ -56,16 +55,6 @@ func (s *schemaMethods) Generate(outputDir string) error {
 	return nil
 }
 
-func checkImports(items []IMethodItem, prefix string) bool {
-	for _, v := range items {
-		if (v.IsBuiltin() || v.IsArray()) && strings.Count(v.GetGoType(), prefix) > 0 {
-			return true
-		}
-	}
-
-	return false
-}
-
 func generateMethods(methods []IMethod) {
 	//methodsCats := make(map[string]struct{})
 	methodsCats := make(schemaPrefixList)
@@ -81,16 +70,16 @@ func generateMethods(methods []IMethod) {
 		}
 
 		// Inspect parameters and fill imports
-		if checkImports(methods[k].GetParameters(), "objects.") {
+		if checkMImports(methods[k].GetParameters(), "objects.") {
 			methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
 		}
 
 		// Inspect responses and fill imports
-		if checkImports(methods[k].GetResponses(), "responses.") {
+		if checkMImports(methods[k].GetResponses(), "responses.") {
 			methodsCats[mPref].Imports[responsesImportPath] = struct{}{}
 		}
 
-		if checkImports(methods[k].GetResponses(), "objects.") {
+		if checkMImports(methods[k].GetResponses(), "objects.") {
 			methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
 		}
 	}
@@ -106,6 +95,7 @@ func generateMethods(methods []IMethod) {
 	funcs["convertParam"] = convertParam
 	funcs["getMNameSuffix"] = getApiMethodNameSuffix
 	funcs["getMNamePrefix"] = getApiMethodNamePrefix
+	funcs["cutSuffix"] = cutSuffix
 	funcs["deco"] = func(method IMethod, count int) struct {
 		M IMethod
 		C int
