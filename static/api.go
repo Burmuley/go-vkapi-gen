@@ -83,7 +83,7 @@ func (vk *VKApi) SendAPIRequest(method string, parameters map[string]interface{}
 		return []byte{}, err
 	}
 
-	if apiResp.Error != nil {
+	if apiResp.Error.GetCode() != 0 {
 		return []byte{}, apiResp.Error
 	}
 
