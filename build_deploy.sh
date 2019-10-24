@@ -12,6 +12,11 @@ go build -o go-vkapi-gen
 # run generator and check exit code
 ./go-vkapi-gen || exit 1
 
+# Run dumb test if package builds or not
+pushd output
+go build || exit 1
+popd
+
 # clone GO VKAPI repo
 mkdir -p ~/.ssh
 touch ~/.ssh/known_hosts
