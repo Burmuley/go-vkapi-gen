@@ -27,6 +27,7 @@ type responsesSchema struct {
 func (r *responsesSchema) Generate(outputDir string) error {
 	tmplFuncs := make(map[string]interface{})
 	tmplFuncs["convertName"] = convertName
+	tmplFuncs["cutSuffix"] = cutSuffix
 
 	generateTypes(r.Definitions, outputDir, respDirName, respHeaderTmplName, respTmplName, tmplFuncs)
 

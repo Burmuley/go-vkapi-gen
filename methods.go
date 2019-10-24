@@ -64,16 +64,23 @@ func generateMethods(methods []IMethod) {
 
 		if _, ok := methodsCats[mPref]; !ok {
 			methodsCats[mPref] = templateImports{
-				Imports: map[string]struct{}{responsesImportPath: struct{}{}},
+				Imports: make(map[string]struct{}),
 				Prefix:  mPref,
 			}
 		}
 
-		for _, v := range methods[k].GetParameters() {
-			if v.IsBuiltin() {
-				methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
-				break
-			}
+		// Inspect parameters and fill imports
+		if checkMImports(methods[k].GetParameters(), "objects.") {
+			methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
+		}
+
+		// Inspect responses and fill imports
+		if checkMImports(methods[k].GetResponses(), "responses.") {
+			methodsCats[mPref].Imports[responsesImportPath] = struct{}{}
+		}
+
+		if checkMImports(methods[k].GetResponses(), "objects.") {
+			methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
 		}
 	}
 
@@ -88,6 +95,7 @@ func generateMethods(methods []IMethod) {
 	funcs["convertParam"] = convertParam
 	funcs["getMNameSuffix"] = getApiMethodNameSuffix
 	funcs["getMNamePrefix"] = getApiMethodNamePrefix
+	funcs["cutSuffix"] = cutSuffix
 	funcs["deco"] = func(method IMethod, count int) struct {
 		M IMethod
 		C int

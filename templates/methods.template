@@ -10,7 +10,8 @@
 {{define "function_template" -}}
     {{$fName := "" -}}
     {{$r := index .M.GetResponses .C -}}
-    {{$resp := $r.GetGoType -}}
+{{/*    {{$resp := $r.GetGoType -}}*/}}
+    {{$resp := (cutSuffix $r.GetGoType "Response") -}}
 {{template "function_descr" . -}}
 func ({{getFLetter .M.GetName}} {{convertName (getMNamePrefix .M.GetName)}}) {{template "function_name" .}}({{template "function_params" .}}) (resp {{$resp}}, err error) {
     params := map[string]interface{}{}
@@ -63,10 +64,12 @@ func ({{getFLetter .M.GetName}} {{convertName (getMNamePrefix .M.GetName)}}) {{t
                     if len({{convertParam $v.GetName}}) > 0 {
                         params["{{$v.GetName -}}"] = SliceToString({{convertParam $v.GetName}})
                     }
-                {{else}}
+                {{else if $v.IsString}}
                     if {{convertParam $v.GetName}} != "" {
                         params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
                     }
+                {{else if $v.IsObject}}
+                    params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
                 {{end}}
             {{end}}
         {{end}}

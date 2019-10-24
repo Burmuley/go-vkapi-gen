@@ -160,7 +160,7 @@ func (s schemaJSONProperty) GetGoType(stripPrefix bool) (tmp []string) {
 			ref = s.Ref
 		}
 
-		tmp = append(tmp, getObjectTypeName(ref))
+		tmp = append(tmp, strings.Join([]string{"*", getObjectTypeName(ref)}, ""))
 		return tmp
 	}
 
@@ -190,7 +190,7 @@ func (s schemaJSONProperty) GetProperties(stripPrefix bool) (tmp map[string]sche
 
 		for _, v := range tmpOf {
 			if v.IsBuiltin() {
-				objName := convertName(v.GetGoType(stripPrefix)[0])
+				objName := convertName(strings.TrimLeft(v.GetGoType(stripPrefix)[0], "*"))
 
 				tmp[objName] = *v
 			} else if v.IsObject() {
