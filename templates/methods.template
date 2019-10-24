@@ -68,7 +68,7 @@ func ({{getFLetter .M.GetName}} {{convertName (getMNamePrefix .M.GetName)}}) {{t
                     if {{convertParam $v.GetName}} != "" {
                         params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
                     }
-                {{else}}
+                {{else if $v.IsObject}}
                     params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
                 {{end}}
             {{end}}
