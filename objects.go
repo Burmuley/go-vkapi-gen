@@ -27,6 +27,16 @@ type objectsSchema struct {
 func (o *objectsSchema) Generate(outputDir string) error {
 	tmplFuncs := make(map[string]interface{})
 	tmplFuncs["convertName"] = convertName
+	tmplFuncs["checkNames"] = checkNames
+	tmplFuncs["deco"] = func(tName schemaJSONProperty, rootType string) struct {
+		T schemaJSONProperty
+		R string
+	} {
+		return struct {
+			T schemaJSONProperty
+			R string
+		}{T: tName, R: rootType}
+	}
 
 	generateTypes(o.Definitions, outputDir, objDirName, objHeaderTmplName, objTmplName, tmplFuncs)
 
