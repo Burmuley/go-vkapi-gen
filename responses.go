@@ -28,6 +28,7 @@ func (r *responsesSchema) Generate(outputDir string) error {
 	tmplFuncs := make(map[string]interface{})
 	tmplFuncs["convertName"] = convertName
 	tmplFuncs["cutSuffix"] = cutSuffix
+	tmplFuncs["checkNames"] = checkNames
 
 	generateTypes(r.Definitions, outputDir, respDirName, respHeaderTmplName, respTmplName, tmplFuncs)
 

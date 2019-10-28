@@ -129,14 +129,16 @@ type schemaJSONProperty struct {
 }
 
 func (s schemaJSONProperty) GetType() string {
+	if len(s.AllOf) > 0 || len(s.OneOf) > 0 {
+		return schemaTypeMultiple
+	} else if len(s.Ref) > 0 {
+		return schemaTypeBuiltin
+	}
+
 	if len(fmt.Sprint(s.Type)) > 0 {
 		return fmt.Sprint(s.Type)
-	} else {
-		if len(s.AllOf) > 0 || len(s.OneOf) > 0 || len(s.Properties) > 0 {
-			return schemaTypeObject
-		} else if len(s.Ref) > 0 {
-			return schemaTypeBuiltin
-		}
+	} else if len(s.Properties) > 0 {
+		return schemaTypeObject
 	}
 
 	return schemaTypeUnknown
@@ -145,6 +147,11 @@ func (s schemaJSONProperty) GetType() string {
 func (s schemaJSONProperty) GetGoType(stripPrefix bool) (tmp []string) {
 	if s.AllOf != nil {
 		for _, r := range s.AllOf {
+			tmp = append(tmp, r.GetGoType(stripPrefix)...)
+		}
+		return tmp
+	} else if s.OneOf != nil {
+		for _, r := range s.OneOf {
 			tmp = append(tmp, r.GetGoType(stripPrefix)...)
 		}
 		return tmp
@@ -160,7 +167,7 @@ func (s schemaJSONProperty) GetGoType(stripPrefix bool) (tmp []string) {
 			ref = s.Ref
 		}
 
-		tmp = append(tmp, strings.Join([]string{"*", getObjectTypeName(ref)}, ""))
+		tmp = append(tmp, getObjectTypeName(ref))
 		return tmp
 	}
 
