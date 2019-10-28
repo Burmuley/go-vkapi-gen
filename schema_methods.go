@@ -163,7 +163,7 @@ func (s schemaMethodItem) GetName() string {
 
 func (s schemaMethodItem) GetDescription() string {
 	if len(s.Descr) == 0 {
-		return "NO DESCRIPTION IN JSON SCHEMA"
+		return "!!! NO DESCRIPTION IN JSON SCHEMA !!!"
 	}
 
 	return s.Descr
