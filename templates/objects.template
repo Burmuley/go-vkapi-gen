@@ -1,8 +1,12 @@
 {{define "go_type"}}
-    {{- $r := (.GetGoType true) -}}
+    {{- $r := (.T.GetGoType true) -}}
     {{- $l := len $r -}}
     {{- if le $l 1 -}}
-        {{printf "%s" ( printf "%s" (index $r 0)) -}}
+        {{- if (checkNames (index $r 0) .R) -}}
+            {{printf "*%s" (index $r 0) -}}
+        {{- else -}}
+            {{printf "%s" (index $r 0) -}}
+        {{end -}}
     {{else -}}
         {{- print " struct {\n" -}}
         {{- range $t := $r -}}
@@ -12,20 +16,20 @@
     {{end -}}
 {{end}}
 {{range $key, $value := . -}}
-// {{convertName $key}} type represents `{{$key}}` API object
+{{$tname := (convertName $key) -}}
+// {{$tname}} type represents `{{$key}}` API object
 {{if or $value.IsInt $value.IsString $value.IsBuiltin $value.IsArray $value.IsNumber $value.IsInterface -}}
-type {{convertName $key}} {{template "go_type" $value}}{{ if (len $value.GetDescription) gt 0}} // {{$value.GetDescription}}{{end}}
+type {{$tname}} {{template "go_type" (deco $value $tname)}}{{ if (len $value.GetDescription) gt 0}} // {{$value.GetDescription}}{{end}}
 {{else if $value.IsObject -}}
-type {{convertName $key -}}
-{{if $value.IsObject -}}
-{{printf " %s" "struct {"}}
-{{range $ok, $ov := ($value.GetProperties true) -}}
-{{print "\t"}}{{convertName $ok}} {{if $ov.IsArray}}[]{{end}}{{template "go_type" $ov}} `json:"{{$ok}}"`  {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}}{{end}}
-{{end -}}
+type {{$tname -}}
+    {{if $value.IsObject -}}
+        {{printf " %s" "struct {"}}
+    {{range $ok, $ov := ($value.GetProperties true) -}}
+        {{print "\t"}}{{convertName $ok}} {{if $ov.IsArray}}[]{{end}}{{template "go_type" (deco $ov $tname)}} `json:"{{$ok}}"`  {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}}{{end}}
+    {{end -}}
+    {{end -}}
 }
-{{else -}}
-{{template "go_type" $value}}
-{{end -}}
-
+{{else if $value.IsMultiple -}}
+type {{$tname -}}{{template "go_type" (deco $value $tname)}}
 {{end}}
 {{end -}}

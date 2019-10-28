@@ -48,11 +48,11 @@ func cutSuffix(str, suf string) string {
 		return str
 	}
 
-	return strings.TrimRight(str, suf)
+	return strings.TrimSuffix(str, suf)
 }
 
 func cutPrefix(str, pref string) string {
-	return strings.TrimLeft(str, pref)
+	return strings.TrimPrefix(str, pref)
 }
 
 func convertParam(param string) string {
@@ -287,4 +287,10 @@ func checkTImports(item schemaJSONProperty, prefix string) bool {
 	}
 
 	return false
+}
+
+func checkNames(tName, btName string) bool {
+	btName = strings.Trim(btName, "[]()")
+
+	return tName == btName
 }
