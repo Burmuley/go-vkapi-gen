@@ -1,11 +1,11 @@
 {{define "go_type"}}
     {{- $r := (.T.GetGoType true) -}}
     {{- $l := len $r -}}
-    {{- if le $l 1 -}}
+    {{- if and (le $l 1) (not .T.IsMultiple) -}}
         {{- if (checkNames (index $r 0) .R) -}}
-            {{printf "*%s" (index $r 0) -}}
+            {{printf " *%s" (index $r 0) -}}
         {{- else -}}
-            {{printf "%s" (index $r 0) -}}
+            {{printf " %s" (index $r 0) -}}
         {{end -}}
     {{else -}}
         {{- print " struct {\n" -}}
@@ -30,6 +30,6 @@ type {{$tname -}}
     {{end -}}
 }
 {{else if $value.IsMultiple -}}
-type {{$tname -}}{{template "go_type" (deco $value $tname)}}
+type {{$tname -}} {{template "go_type" (deco $value $tname)}}
 {{end}}
 {{end -}}
