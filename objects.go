@@ -56,5 +56,12 @@ func (o *objectsSchema) Parse(fPath string) error {
 		return fmt.Errorf("JSON Error: %s", err)
 	}
 
+	// fill the `stripPrefix` variable with 'true' for objects
+	for k := range o.Definitions {
+		tmp := o.Definitions[k]
+		tmp.stripPrefix = true
+		o.Definitions[k] = tmp
+	}
+
 	return nil
 }

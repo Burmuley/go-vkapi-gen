@@ -14,13 +14,13 @@
 {{range $key, $value := . -}}
 // {{cutSuffix (convertName $key) "Response"}} type represents `{{$key}}` API response object
 {{ $response := (index ($value.GetProperties false) "response") -}}
-{{if or $response.IsInt $response.IsString $response.IsBuiltin $response.IsArray $response.IsNumber $response.IsInterface $response.IsBoolean -}}
+{{if or (IsInt $response) (IsString $response) (IsBuiltin $response) (IsArray $response) (IsNumber $response) (IsInterface $response) (IsBoolean $response) -}}
 type {{cutSuffix (convertName $key) "Response"}} {{template "go_type" $response}}{{ if (len $response.GetDescription) gt 0}} // {{$response.GetDescription}}{{end}}
-{{else if $response.IsObject -}}
+{{else if (IsObject $response) -}}
 type {{cutSuffix (convertName $key) "Response"}} struct {
-{{if $response.IsObject -}}
+{{if (IsObject $response) -}}
 {{range $ok, $ov := ($response.GetProperties false) -}}
-{{print "\t"}}{{convertName $ok}} {{if $ov.IsArray}}[]{{end}}{{template "go_type" $ov}} `json:"{{$ok}}"`  {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}}{{end}}
+{{print "\t"}}{{convertName $ok}} {{if (IsArray $ov)}}[]{{end}}{{template "go_type" $ov}} `json:"{{$ok}}"`  {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}}{{end}}
 {{end -}}
 }
 {{else -}}

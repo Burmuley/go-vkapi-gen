@@ -233,7 +233,7 @@ func copyFile(src, dst string) error {
 func detectGoType(s string) string {
 	switch s {
 	case schemaTypeNumber:
-		return "float64"
+		return "json.Number"
 	case schemaTypeInterface, schemaTypeObject:
 		return "interface{}"
 	case schemaTypeInt:
@@ -268,17 +268,17 @@ func checkMImports(items []IMethodItem, prefix string) bool {
 }
 
 func checkTImports(item schemaJSONProperty, prefix string) bool {
-	if item.IsBuiltin() && strings.Count(item.GetGoType(false)[0], prefix) > 0 {
+	if item.IsBuiltin() && strings.Count(item.GetGoType()[0], prefix) > 0 {
 		return true
 	}
 
-	if item.IsArray() && strings.Count(item.Items.GetGoType(false)[0], prefix) > 0 {
+	if item.IsArray() && strings.Count(item.Items.GetGoType()[0], prefix) > 0 {
 		return true
 	}
 
 	if item.IsObject() {
 		for _, v := range item.GetProperties(false) {
-			if (v.IsBuiltin() || v.IsArray()) && strings.Count(v.GetGoType(false)[0], prefix) > 0 {
+			if (v.IsBuiltin() || v.IsArray()) && strings.Count(v.GetGoType()[0], prefix) > 0 {
 				return true
 			} else if v.IsObject() {
 				return checkTImports(v, prefix)

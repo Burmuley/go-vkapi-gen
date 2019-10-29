@@ -16,7 +16,7 @@ limitations under the License.
 package main
 
 type IType interface {
-	GetGoType(stripPrefix bool) []string
+	GetGoType() []string
 	GetDescription() string
 	GetType() string
 }
@@ -53,12 +53,13 @@ type IMethod interface {
 }
 
 type IMethodItem interface {
-	GetGoType() string
+	//GetGoType() string
 	IsRequired() bool
-	GetType() string
+	//GetType() string
 	GetName() string
-	GetDescription() string
+	//GetDescription() string
 	IChecker
+	IType
 }
 
 type IGenerator interface {

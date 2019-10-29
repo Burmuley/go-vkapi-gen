@@ -50,7 +50,7 @@ func (s *schemaTypeWrapper) UnmarshalJSON(b []byte) error {
 	case string:
 		s.Type = fmt.Sprintf("%s", tmp)
 	case []interface{}:
-		s.Type = schemaTypeMultiple
+		s.Type = schemaTypeNumber
 	default:
 		s.Type = schemaTypeUnknown
 		return schemaError{
@@ -71,12 +71,12 @@ type schemaItemsWrapper struct {
 	ItemsArr []*schemaJSONProperty `json:"-"`
 }
 
-func (s schemaItemsWrapper) GetGoType(stripPrefix bool) (tmp []string) {
+func (s schemaItemsWrapper) GetGoType() (tmp []string) {
 	if s.ItemsArr != nil {
 		tmp = append(tmp, "interface{}")
 		return tmp
 	} else if s.Items != nil {
-		for _, i := range s.Items.GetGoType(stripPrefix) {
+		for _, i := range s.Items.GetGoType() {
 			tmp = append(tmp, fmt.Sprintf("%s", i))
 		}
 		return tmp
@@ -116,16 +116,17 @@ func (s *schemaItemsWrapper) UnmarshalJSON(b []byte) error {
 // JSON schema element data structure
 //////////////////////////////////////////////////////////////////////
 type schemaJSONProperty struct {
-	Type       schemaTypeWrapper              `json:"type,omitempty"`
-	Descr      string                         `json:"description,omitempty"`
-	AllOf      []*schemaJSONProperty          `json:"allOf,omitempty"`
-	OneOf      []*schemaJSONProperty          `json:"oneOf,omitempty"`
-	Properties map[string]*schemaJSONProperty `json:"properties,omitempty"`
-	Required   []string                       `json:"required,omitempty"`
-	Enum       []interface{}                  `json:"enum,omitempty"` // TODO: make a wrapper (can be int or string)
-	EnumNames  []string                       `json:"enum_names,omitempty"`
-	Items      *schemaItemsWrapper            `json:"items,omitempty"`
-	Ref        string                         `json:"$ref,omitempty"`
+	Type        schemaTypeWrapper              `json:"type,omitempty"`
+	Descr       string                         `json:"description,omitempty"`
+	AllOf       []*schemaJSONProperty          `json:"allOf,omitempty"`
+	OneOf       []*schemaJSONProperty          `json:"oneOf,omitempty"`
+	Properties  map[string]*schemaJSONProperty `json:"properties,omitempty"`
+	Required    []string                       `json:"required,omitempty"`
+	Enum        []interface{}                  `json:"enum,omitempty"` // TODO: make a wrapper (can be int or string)
+	EnumNames   []string                       `json:"enum_names,omitempty"`
+	Items       *schemaItemsWrapper            `json:"items,omitempty"`
+	Ref         string                         `json:"$ref,omitempty"`
+	stripPrefix bool                           `json:"-"`
 }
 
 func (s schemaJSONProperty) GetType() string {
@@ -144,15 +145,15 @@ func (s schemaJSONProperty) GetType() string {
 	return schemaTypeUnknown
 }
 
-func (s schemaJSONProperty) GetGoType(stripPrefix bool) (goTypes []string) {
+func (s schemaJSONProperty) GetGoType() (goTypes []string) {
 	if s.AllOf != nil {
 		for _, r := range s.AllOf {
-			goTypes = append(goTypes, r.GetGoType(stripPrefix)...)
+			goTypes = append(goTypes, r.GetGoType()...)
 		}
 		return
 	} else if s.OneOf != nil {
 		for _, r := range s.OneOf {
-			goTypes = append(goTypes, r.GetGoType(stripPrefix)...)
+			goTypes = append(goTypes, r.GetGoType()...)
 		}
 		return
 	}
@@ -160,7 +161,7 @@ func (s schemaJSONProperty) GetGoType(stripPrefix bool) (goTypes []string) {
 	if len(s.Ref) > 0 {
 		var ref string
 
-		if stripPrefix {
+		if s.stripPrefix {
 			stripped := strings.Split(s.Ref, "#")
 			ref = strings.Join([]string{"#", stripped[len(stripped)-1]}, "")
 		} else {
@@ -172,7 +173,7 @@ func (s schemaJSONProperty) GetGoType(stripPrefix bool) (goTypes []string) {
 	}
 
 	if fmt.Sprint(s.Type) == schemaTypeArray {
-		return s.Items.GetGoType(stripPrefix)
+		return s.Items.GetGoType()
 	}
 
 	goTypes = append(goTypes, detectGoType(fmt.Sprintf("%s", s.Type)))
@@ -197,7 +198,7 @@ func (s schemaJSONProperty) GetProperties(stripPrefix bool) (pMap map[string]sch
 
 		for _, v := range mTypes {
 			if v.IsBuiltin() {
-				objName := convertName(strings.TrimLeft(v.GetGoType(stripPrefix)[0], "*"))
+				objName := convertName(strings.TrimLeft(v.GetGoType()[0], "*"))
 
 				pMap[objName] = *v
 			} else if v.IsObject() {
