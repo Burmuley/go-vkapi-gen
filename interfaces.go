@@ -18,6 +18,10 @@ package main
 type IType interface {
 	GetGoType(stripPrefix bool) []string
 	GetDescription() string
+	GetType() string
+}
+
+type ITypeProperty interface {
 	GetProperties(stripPrefix bool) map[string]schemaJSONProperty
 }
 

@@ -152,3 +152,52 @@ func generateTypes(types map[string]schemaJSONProperty, outRootDir, dir, headerT
 
 	wg.Wait()
 }
+
+func IsString(t IType) bool {
+	return t.GetType() == schemaTypeString
+}
+
+func IsInt(t IType) bool {
+	return t.GetType() == schemaTypeInt
+}
+
+func IsBuiltin(t IType) bool {
+	return t.GetType() == schemaTypeBuiltin
+}
+
+func IsArray(t IType) bool {
+	return t.GetType() == schemaTypeArray
+}
+
+func IsObject(t IType) bool {
+	return t.GetType() == schemaTypeObject
+}
+
+func IsBoolean(t IType) bool {
+	return t.GetType() == schemaTypeBoolean
+}
+
+func IsInterface(t IType) bool {
+	return t.GetType() == schemaTypeInterface
+}
+
+func IsNumber(t IType) bool {
+	return t.GetType() == schemaTypeNumber
+}
+
+func IsMultiple(t IType) bool {
+	return t.GetType() == schemaTypeMultiple
+}
+
+func fillFuncs(m map[string]interface{}) map[string]interface{} {
+	m["IsString"] = IsString
+	m["IsInt"] = IsInt
+	m["IsBuiltin"] = IsBuiltin
+	m["IsArray"] = IsArray
+	m["IsObject"] = IsObject
+	m["IsBoolean"] = IsBoolean
+	m["IsInterface"] = IsInterface
+	m["IsNumber"] = IsNumber
+	m["IsMultiple"] = IsMultiple
+	return m
+}

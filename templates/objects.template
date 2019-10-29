@@ -15,6 +15,15 @@
         {{print "}" -}}
     {{end -}}
 {{end}}
+{{define "go_multitype"}}
+    {{- $r := (.GetProperties true) -}}
+{{/*    {{- $l := len $r -}}*/}}
+    {{- print " struct {\n" -}}
+    {{- range $k, $v := $r -}}
+        {{print "\t\t"}}{{$k}}{{template "go_type" (deco $v $k)}}
+    {{end -}}
+    {{print "}" -}}
+{{end}}
 {{range $key, $value := . -}}
 {{$tname := (convertName $key) -}}
 // {{$tname}} type represents `{{$key}}` API object

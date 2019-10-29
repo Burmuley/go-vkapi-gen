@@ -144,17 +144,17 @@ func (s schemaJSONProperty) GetType() string {
 	return schemaTypeUnknown
 }
 
-func (s schemaJSONProperty) GetGoType(stripPrefix bool) (tmp []string) {
+func (s schemaJSONProperty) GetGoType(stripPrefix bool) (goTypes []string) {
 	if s.AllOf != nil {
 		for _, r := range s.AllOf {
-			tmp = append(tmp, r.GetGoType(stripPrefix)...)
+			goTypes = append(goTypes, r.GetGoType(stripPrefix)...)
 		}
-		return tmp
+		return
 	} else if s.OneOf != nil {
 		for _, r := range s.OneOf {
-			tmp = append(tmp, r.GetGoType(stripPrefix)...)
+			goTypes = append(goTypes, r.GetGoType(stripPrefix)...)
 		}
-		return tmp
+		return
 	}
 
 	if len(s.Ref) > 0 {
@@ -167,57 +167,57 @@ func (s schemaJSONProperty) GetGoType(stripPrefix bool) (tmp []string) {
 			ref = s.Ref
 		}
 
-		tmp = append(tmp, getObjectTypeName(ref))
-		return tmp
+		goTypes = append(goTypes, getObjectTypeName(ref))
+		return
 	}
 
 	if fmt.Sprint(s.Type) == schemaTypeArray {
 		return s.Items.GetGoType(stripPrefix)
 	}
 
-	tmp = append(tmp, detectGoType(fmt.Sprintf("%s", s.Type)))
-	return tmp
+	goTypes = append(goTypes, detectGoType(fmt.Sprintf("%s", s.Type)))
+	return
 }
 
 func (s schemaJSONProperty) GetDescription() string {
 	return s.Descr
 }
 
-func (s schemaJSONProperty) GetProperties(stripPrefix bool) (tmp map[string]schemaJSONProperty) {
+func (s schemaJSONProperty) GetProperties(stripPrefix bool) (pMap map[string]schemaJSONProperty) {
 	if len(s.AllOf) > 0 || len(s.OneOf) > 0 {
-		var tmpOf []*schemaJSONProperty
+		var mTypes []*schemaJSONProperty
 
 		if len(s.AllOf) > 0 {
-			tmpOf = s.AllOf
+			mTypes = s.AllOf
 		} else if len(s.OneOf) > 0 {
-			tmpOf = s.OneOf
+			mTypes = s.OneOf
 		}
 
-		tmp = make(map[string]schemaJSONProperty, len(tmpOf))
+		pMap = make(map[string]schemaJSONProperty)
 
-		for _, v := range tmpOf {
+		for _, v := range mTypes {
 			if v.IsBuiltin() {
 				objName := convertName(strings.TrimLeft(v.GetGoType(stripPrefix)[0], "*"))
 
-				tmp[objName] = *v
+				pMap[objName] = *v
 			} else if v.IsObject() {
 				for k, v := range v.GetProperties(stripPrefix) {
-					tmp[k] = v
+					pMap[k] = v
 				}
 			}
 		}
 
-		return tmp
+		return pMap
 	}
 
 	if len(s.Properties) > 0 {
-		tmp = make(map[string]schemaJSONProperty, len(s.Properties))
+		pMap = make(map[string]schemaJSONProperty, len(s.Properties))
 
 		for k, v := range s.Properties {
-			tmp[k] = *v
+			pMap[k] = *v
 		}
 
-		return tmp
+		return pMap
 	}
 
 	return nil
