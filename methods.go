@@ -91,6 +91,8 @@ func generateMethods(methods []IMethod) {
 	wg.Add(len(methodsCats))
 
 	funcs := make(map[string]interface{})
+	funcs = fillFuncs(funcs)
+
 	funcs["convertName"] = convertName
 	funcs["convertParam"] = convertParam
 	funcs["getMNameSuffix"] = getApiMethodNameSuffix

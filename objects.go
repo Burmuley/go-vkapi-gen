@@ -29,6 +29,7 @@ func (o *objectsSchema) Generate(outputDir string) error {
 	tmplFuncs["convertName"] = convertName
 	tmplFuncs["checkNames"] = checkNames
 	tmplFuncs = fillFuncs(tmplFuncs)
+
 	tmplFuncs["deco"] = func(tName schemaJSONProperty, rootType string) struct {
 		T schemaJSONProperty
 		R string
