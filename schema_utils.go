@@ -123,6 +123,11 @@ func generateTypes(types map[string]schemaJSONProperty, outRootDir, dir, headerT
 		if checkTImports(types[k], "responses.") {
 			defCats[dPref].Imports[responsesImportPath] = struct{}{}
 		}
+
+		if checkTImports(types[k], "json.Number") {
+			defCats[dPref].Imports["encoding/json"] = struct{}{}
+		}
+
 	}
 
 	// Create channels map and fill it

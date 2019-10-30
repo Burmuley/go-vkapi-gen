@@ -1,5 +1,5 @@
 {{define "go_type"}}
-    {{- $r := (.T.GetGoType true) -}}
+    {{- $r := .T.GetGoType -}}
     {{- $l := len $r -}}
     {{- if and (le $l 1) (not (IsMultiple .T)) -}}
         {{- if (checkNames (index $r 0) .R) -}}

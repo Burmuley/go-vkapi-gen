@@ -268,19 +268,19 @@ func checkMImports(items []IMethodItem, prefix string) bool {
 }
 
 func checkTImports(item schemaJSONProperty, prefix string) bool {
-	if item.IsBuiltin() && strings.Count(item.GetGoType()[0], prefix) > 0 {
+	if IsBuiltin(item) && strings.Count(item.GetGoType()[0], prefix) > 0 {
 		return true
 	}
 
-	if item.IsArray() && strings.Count(item.Items.GetGoType()[0], prefix) > 0 {
+	if IsArray(item) && strings.Count(item.Items.GetGoType()[0], prefix) > 0 {
 		return true
 	}
 
-	if item.IsObject() {
+	if IsObject(item) {
 		for _, v := range item.GetProperties(false) {
-			if (v.IsBuiltin() || v.IsArray()) && strings.Count(v.GetGoType()[0], prefix) > 0 {
+			if (IsBuiltin(v) || IsArray(v) || IsNumber(v)) && strings.Count(v.GetGoType()[0], prefix) > 0 {
 				return true
-			} else if v.IsObject() {
+			} else if IsObject(v) {
 				return checkTImports(v, prefix)
 			}
 		}

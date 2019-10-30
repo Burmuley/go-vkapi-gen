@@ -197,11 +197,11 @@ func (s schemaJSONProperty) GetProperties(stripPrefix bool) (pMap map[string]sch
 		pMap = make(map[string]schemaJSONProperty)
 
 		for _, v := range mTypes {
-			if v.IsBuiltin() {
+			if IsBuiltin(v) {
 				objName := convertName(strings.TrimLeft(v.GetGoType()[0], "*"))
 
 				pMap[objName] = *v
-			} else if v.IsObject() {
+			} else if IsObject(v) {
 				for k, v := range v.GetProperties(stripPrefix) {
 					pMap[k] = v
 				}
@@ -222,40 +222,4 @@ func (s schemaJSONProperty) GetProperties(stripPrefix bool) (pMap map[string]sch
 	}
 
 	return nil
-}
-
-func (s schemaJSONProperty) IsString() bool {
-	return s.GetType() == schemaTypeString
-}
-
-func (s schemaJSONProperty) IsInt() bool {
-	return s.GetType() == schemaTypeInt
-}
-
-func (s schemaJSONProperty) IsBuiltin() bool {
-	return s.GetType() == schemaTypeBuiltin
-}
-
-func (s schemaJSONProperty) IsArray() bool {
-	return s.GetType() == schemaTypeArray
-}
-
-func (s schemaJSONProperty) IsObject() bool {
-	return s.GetType() == schemaTypeObject
-}
-
-func (s schemaJSONProperty) IsBoolean() bool {
-	return s.GetType() == schemaTypeBoolean
-}
-
-func (s schemaJSONProperty) IsInterface() bool {
-	return s.GetType() == schemaTypeInterface
-}
-
-func (s schemaJSONProperty) IsNumber() bool {
-	return s.GetType() == schemaTypeNumber
-}
-
-func (s schemaJSONProperty) IsMultiple() bool {
-	return s.GetType() == schemaTypeMultiple
 }

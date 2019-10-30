@@ -53,13 +53,13 @@ type IMethod interface {
 }
 
 type IMethodItem interface {
-	//GetGoType() string
+	GetGoType() string
 	IsRequired() bool
-	//GetType() string
+	GetType() string
 	GetName() string
-	//GetDescription() string
+	GetDescription() string
 	IChecker
-	IType
+	//IType
 }
 
 type IGenerator interface {

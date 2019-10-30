@@ -1,6 +1,6 @@
 {{define "go_type"}}
-    {{- $r := (.GetGoType false) -}}
-    {{- $l := len (.GetGoType false) -}}
+    {{- $r := .GetGoType -}}
+    {{- $l := len $r -}}
     {{- if le $l 1 -}}
         {{printf "%s" ( printf "%s" (index $r 0)) -}}
     {{else -}}
