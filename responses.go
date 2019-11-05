@@ -29,6 +29,7 @@ func (r *responsesSchema) Generate(outputDir string) error {
 	tmplFuncs["convertName"] = convertName
 	tmplFuncs["cutSuffix"] = cutSuffix
 	tmplFuncs["checkNames"] = checkNames
+	tmplFuncs = fillFuncs(tmplFuncs)
 
 	generateTypes(r.Definitions, outputDir, respDirName, respHeaderTmplName, respTmplName, tmplFuncs)
 
