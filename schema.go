@@ -50,7 +50,7 @@ func (s *schemaTypeWrapper) UnmarshalJSON(b []byte) error {
 	case string:
 		s.Type = fmt.Sprintf("%s", tmp)
 	case []interface{}:
-		s.Type = schemaTypeMultiple
+		s.Type = schemaTypeNumber
 	default:
 		s.Type = schemaTypeUnknown
 		return schemaError{
@@ -71,18 +71,14 @@ type schemaItemsWrapper struct {
 	ItemsArr []*schemaJSONProperty `json:"-"`
 }
 
-func (s schemaItemsWrapper) GetGoType(stripPrefix bool) (tmp []string) {
+func (s schemaItemsWrapper) GetGoType() string {
 	if s.ItemsArr != nil {
-		tmp = append(tmp, "interface{}")
-		return tmp
+		return "interface{}"
 	} else if s.Items != nil {
-		for _, i := range s.Items.GetGoType(stripPrefix) {
-			tmp = append(tmp, fmt.Sprintf("%s", i))
-		}
-		return tmp
+		return s.Items.GetGoType()
 	}
 
-	return []string{}
+	return ""
 }
 
 func (s schemaItemsWrapper) GetDescription() string {
@@ -116,16 +112,17 @@ func (s *schemaItemsWrapper) UnmarshalJSON(b []byte) error {
 // JSON schema element data structure
 //////////////////////////////////////////////////////////////////////
 type schemaJSONProperty struct {
-	Type       schemaTypeWrapper              `json:"type,omitempty"`
-	Descr      string                         `json:"description,omitempty"`
-	AllOf      []*schemaJSONProperty          `json:"allOf,omitempty"`
-	OneOf      []*schemaJSONProperty          `json:"oneOf,omitempty"`
-	Properties map[string]*schemaJSONProperty `json:"properties,omitempty"`
-	Required   []string                       `json:"required,omitempty"`
-	Enum       []interface{}                  `json:"enum,omitempty"` // TODO: make a wrapper (can be int or string)
-	EnumNames  []string                       `json:"enum_names,omitempty"`
-	Items      *schemaItemsWrapper            `json:"items,omitempty"`
-	Ref        string                         `json:"$ref,omitempty"`
+	Type        schemaTypeWrapper              `json:"type,omitempty"`
+	Descr       string                         `json:"description,omitempty"`
+	AllOf       []*schemaJSONProperty          `json:"allOf,omitempty"`
+	OneOf       []*schemaJSONProperty          `json:"oneOf,omitempty"`
+	Properties  map[string]*schemaJSONProperty `json:"properties,omitempty"`
+	Required    []string                       `json:"required,omitempty"`
+	Enum        []interface{}                  `json:"enum,omitempty"` // TODO: make a wrapper (can be int or string)
+	EnumNames   []string                       `json:"enum_names,omitempty"`
+	Items       *schemaItemsWrapper            `json:"items,omitempty"`
+	Ref         string                         `json:"$ref,omitempty"`
+	stripPrefix bool                           `json:"-"`
 }
 
 func (s schemaJSONProperty) GetType() string {
@@ -144,117 +141,81 @@ func (s schemaJSONProperty) GetType() string {
 	return schemaTypeUnknown
 }
 
-func (s schemaJSONProperty) GetGoType(stripPrefix bool) (tmp []string) {
+func (s schemaJSONProperty) GetGoType() (goTypes string) {
 	if s.AllOf != nil {
+		tmpArr := make([]string, 0)
 		for _, r := range s.AllOf {
-			tmp = append(tmp, r.GetGoType(stripPrefix)...)
+			tmpArr = append(tmpArr, r.GetGoType())
 		}
-		return tmp
+		return strings.Join(tmpArr, "\n")
 	} else if s.OneOf != nil {
+		tmpArr := make([]string, 0)
 		for _, r := range s.OneOf {
-			tmp = append(tmp, r.GetGoType(stripPrefix)...)
+			tmpArr = append(tmpArr, r.GetGoType())
 		}
-		return tmp
+		return strings.Join(tmpArr, "\n")
 	}
 
 	if len(s.Ref) > 0 {
 		var ref string
 
-		if stripPrefix {
+		if s.stripPrefix {
 			stripped := strings.Split(s.Ref, "#")
 			ref = strings.Join([]string{"#", stripped[len(stripped)-1]}, "")
 		} else {
 			ref = s.Ref
 		}
 
-		tmp = append(tmp, getObjectTypeName(ref))
-		return tmp
+		return getObjectTypeName(ref)
 	}
 
 	if fmt.Sprint(s.Type) == schemaTypeArray {
-		return s.Items.GetGoType(stripPrefix)
+		return s.Items.GetGoType()
 	}
 
-	tmp = append(tmp, detectGoType(fmt.Sprintf("%s", s.Type)))
-	return tmp
+	return detectGoType(fmt.Sprintf("%s", s.Type))
 }
 
 func (s schemaJSONProperty) GetDescription() string {
 	return s.Descr
 }
 
-func (s schemaJSONProperty) GetProperties(stripPrefix bool) (tmp map[string]schemaJSONProperty) {
+func (s schemaJSONProperty) GetProperties(stripPrefix bool) (pMap map[string]schemaJSONProperty) {
 	if len(s.AllOf) > 0 || len(s.OneOf) > 0 {
-		var tmpOf []*schemaJSONProperty
+		var mTypes []*schemaJSONProperty
 
 		if len(s.AllOf) > 0 {
-			tmpOf = s.AllOf
+			mTypes = s.AllOf
 		} else if len(s.OneOf) > 0 {
-			tmpOf = s.OneOf
+			mTypes = s.OneOf
 		}
 
-		tmp = make(map[string]schemaJSONProperty, len(tmpOf))
+		pMap = make(map[string]schemaJSONProperty)
 
-		for _, v := range tmpOf {
-			if v.IsBuiltin() {
-				objName := convertName(strings.TrimLeft(v.GetGoType(stripPrefix)[0], "*"))
+		for _, v := range mTypes {
+			if IsBuiltin(v) {
+				objName := convertName(strings.TrimLeft(v.GetGoType(), "*"))
 
-				tmp[objName] = *v
-			} else if v.IsObject() {
+				pMap[objName] = *v
+			} else if IsObject(v) {
 				for k, v := range v.GetProperties(stripPrefix) {
-					tmp[k] = v
+					pMap[k] = v
 				}
 			}
 		}
 
-		return tmp
+		return pMap
 	}
 
 	if len(s.Properties) > 0 {
-		tmp = make(map[string]schemaJSONProperty, len(s.Properties))
+		pMap = make(map[string]schemaJSONProperty, len(s.Properties))
 
 		for k, v := range s.Properties {
-			tmp[k] = *v
+			pMap[k] = *v
 		}
 
-		return tmp
+		return pMap
 	}
 
 	return nil
-}
-
-func (s schemaJSONProperty) IsString() bool {
-	return s.GetType() == schemaTypeString
-}
-
-func (s schemaJSONProperty) IsInt() bool {
-	return s.GetType() == schemaTypeInt
-}
-
-func (s schemaJSONProperty) IsBuiltin() bool {
-	return s.GetType() == schemaTypeBuiltin
-}
-
-func (s schemaJSONProperty) IsArray() bool {
-	return s.GetType() == schemaTypeArray
-}
-
-func (s schemaJSONProperty) IsObject() bool {
-	return s.GetType() == schemaTypeObject
-}
-
-func (s schemaJSONProperty) IsBoolean() bool {
-	return s.GetType() == schemaTypeBoolean
-}
-
-func (s schemaJSONProperty) IsInterface() bool {
-	return s.GetType() == schemaTypeInterface
-}
-
-func (s schemaJSONProperty) IsNumber() bool {
-	return s.GetType() == schemaTypeNumber
-}
-
-func (s schemaJSONProperty) IsMultiple() bool {
-	return s.GetType() == schemaTypeMultiple
 }

@@ -57,11 +57,11 @@ func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, imports templateImpor
 
 	defer f.Close()
 
-	// Render header and write to the file
+	// Render header and write to the buffer
 	tmpl, err := template.New(strings.Split(headerTmpl, "/")[1]).Funcs(tmplFuncs).ParseFiles(headerTmpl)
 	err = tmpl.Execute(&buf, imports)
 
-	// Read data structures from the channel and append to the file
+	// Read data structures from the channel and append to the buffer
 	for {
 		d, more := <-ch
 
@@ -79,6 +79,7 @@ func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, imports templateImpor
 				log.Println(err)
 			}
 		} else {
+			// Format buffer and write to the file when channel is closed
 			bb := buf.Bytes()
 			if fmtCode, err := format.Source(bb); err != nil {
 				log.Printf("[[%s]] error formatting code: %s. Writing code as is...", fName, err)
@@ -102,7 +103,6 @@ func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, imports templateImpor
 }
 
 func generateTypes(types map[string]schemaJSONProperty, outRootDir, dir, headerTmpl, bodyTmpl string, tmplFuncs map[string]interface{}) {
-	//defCats := make(map[string]struct{})
 	defCats := make(schemaPrefixList)
 	defKeys := make([]string, 0)
 
@@ -123,6 +123,11 @@ func generateTypes(types map[string]schemaJSONProperty, outRootDir, dir, headerT
 		if checkTImports(types[k], "responses.") {
 			defCats[dPref].Imports[responsesImportPath] = struct{}{}
 		}
+
+		if checkTImports(types[k], "json.Number") {
+			defCats[dPref].Imports["encoding/json"] = struct{}{}
+		}
+
 	}
 
 	// Create channels map and fill it
@@ -151,4 +156,54 @@ func generateTypes(types map[string]schemaJSONProperty, outRootDir, dir, headerT
 	}
 
 	wg.Wait()
+}
+
+func IsString(t IType) bool {
+	return t.GetType() == schemaTypeString
+}
+
+func IsInt(t IType) bool {
+	return t.GetType() == schemaTypeInt
+}
+
+func IsBuiltin(t IType) bool {
+	return t.GetType() == schemaTypeBuiltin
+}
+
+func IsArray(t IType) bool {
+	return t.GetType() == schemaTypeArray
+}
+
+func IsObject(t IType) bool {
+	return t.GetType() == schemaTypeObject
+}
+
+func IsBoolean(t IType) bool {
+	return t.GetType() == schemaTypeBoolean
+}
+
+func IsInterface(t IType) bool {
+	return t.GetType() == schemaTypeInterface
+}
+
+func IsNumber(t IType) bool {
+	return t.GetType() == schemaTypeNumber
+}
+
+func IsMultiple(t IType) bool {
+	return t.GetType() == schemaTypeMultiple
+}
+
+func fillFuncs(m map[string]interface{}) map[string]interface{} {
+	m["IsString"] = IsString
+	m["IsInt"] = IsInt
+	m["IsBuiltin"] = IsBuiltin
+	m["IsArray"] = IsArray
+	m["IsObject"] = IsObject
+	m["IsBoolean"] = IsBoolean
+	m["IsInterface"] = IsInterface
+	m["IsNumber"] = IsNumber
+	m["IsMultiple"] = IsMultiple
+	m["checkChars"] = checkChars
+	return m
 }

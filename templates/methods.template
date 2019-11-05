@@ -13,7 +13,7 @@
 {{/*    {{$resp := $r.GetGoType -}}*/}}
     {{$resp := (cutSuffix $r.GetGoType "Response") -}}
 {{template "function_descr" . -}}
-func ({{getFLetter .M.GetName}} {{convertName (getMNamePrefix .M.GetName)}}) {{template "function_name" .}}({{template "function_params" .}}) (resp {{$resp}}, err error) {
+func ({{getFLetter .M.GetName}} *{{convertName (getMNamePrefix .M.GetName)}}) {{template "function_name" .}}({{template "function_params" .}}) (resp {{$resp}}, err error) {
     params := map[string]interface{}{}
     {{if eq .C 1 -}}
         params["extended"] = "1"
@@ -48,27 +48,33 @@ func ({{getFLetter .M.GetName}} {{convertName (getMNamePrefix .M.GetName)}}) {{t
     {{range $i, $v := .M.GetParameters -}}
         {{if ne $v.GetName "extended"}}
             {{if $v.IsRequired}}
-                {{if $v.IsArray}}
+                {{if (IsArray $v) }}
                     params["{{$v.GetName -}}"] = SliceToString({{convertParam $v.GetName}})
                 {{else}}
                     params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
                 {{end}}
             {{else}}
-                {{if or $v.IsNumber $v.IsInt}}
+                {{if or (IsInt $v)}}
                     if {{convertParam $v.GetName}} > 0 {
                         params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
                     }
-                {{else if $v.IsBoolean}}
+                {{else if (IsNumber $v) }}
+                    if v, err := {{convertParam $v.GetName -}}.Int64(); err == nil && v > 0 {
+                        params["{{$v.GetName -}}"] = v
+                    } else if v := {{convertParam $v.GetName -}}.String(); v != "" {
+                        params["{{$v.GetName -}}"] = v
+                    }
+                {{else if (IsBoolean $v) }}
                     params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
-                {{else if $v.IsArray}}
+                {{else if (IsArray $v) }}
                     if len({{convertParam $v.GetName}}) > 0 {
                         params["{{$v.GetName -}}"] = SliceToString({{convertParam $v.GetName}})
                     }
-                {{else if $v.IsString}}
+                {{else if (IsString $v)}}
                     if {{convertParam $v.GetName}} != "" {
                         params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
                     }
-                {{else if $v.IsObject}}
+                {{else if (IsObject $v)}}
                     params["{{$v.GetName -}}"] = {{convertParam $v.GetName}}
                 {{end}}
             {{end}}

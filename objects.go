@@ -28,6 +28,8 @@ func (o *objectsSchema) Generate(outputDir string) error {
 	tmplFuncs := make(map[string]interface{})
 	tmplFuncs["convertName"] = convertName
 	tmplFuncs["checkNames"] = checkNames
+	tmplFuncs = fillFuncs(tmplFuncs)
+
 	tmplFuncs["deco"] = func(tName schemaJSONProperty, rootType string) struct {
 		T schemaJSONProperty
 		R string
@@ -54,5 +56,51 @@ func (o *objectsSchema) Parse(fPath string) error {
 		return fmt.Errorf("JSON Error: %s", err)
 	}
 
+	// fill the `stripPrefix` variable with 'true' for objects
+	for k := range o.Definitions {
+		tmp := o.Definitions[k]
+		//tmp.stripPrefix = true
+		setStripPrefix(&tmp, true)
+		o.Definitions[k] = tmp
+	}
+
 	return nil
+}
+
+func setStripPrefix(j *schemaJSONProperty, val bool) {
+	j.stripPrefix = val
+
+	// set stripPrefix in allOf and OneOf
+	for _, v := range j.AllOf {
+		setStripPrefix(v, val)
+	}
+
+	for _, v := range j.OneOf {
+		setStripPrefix(v, val)
+	}
+
+	// set stripPrefix in Properties
+	for _, v := range j.Properties {
+		if IsBuiltin(v) || IsArray(v) {
+			setStripPrefix(v, val)
+		}
+	}
+
+	// set stripPrefix in Items
+
+	if j.Items != nil {
+		for _, v := range j.Items.ItemsArr {
+			if IsBuiltin(*v) {
+				setStripPrefix(v, val)
+			}
+		}
+
+		if j.Items.Items != nil {
+			if IsBuiltin(j.Items.Items) {
+				setStripPrefix(j.Items.Items, val)
+			}
+
+		}
+	}
+
 }
