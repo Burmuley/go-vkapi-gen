@@ -71,18 +71,14 @@ type schemaItemsWrapper struct {
 	ItemsArr []*schemaJSONProperty `json:"-"`
 }
 
-func (s schemaItemsWrapper) GetGoType() (tmp []string) {
+func (s schemaItemsWrapper) GetGoType() string {
 	if s.ItemsArr != nil {
-		tmp = append(tmp, "interface{}")
-		return tmp
+		return "interface{}"
 	} else if s.Items != nil {
-		for _, i := range s.Items.GetGoType() {
-			tmp = append(tmp, fmt.Sprintf("%s", i))
-		}
-		return tmp
+		return s.Items.GetGoType()
 	}
 
-	return []string{}
+	return ""
 }
 
 func (s schemaItemsWrapper) GetDescription() string {
@@ -145,17 +141,19 @@ func (s schemaJSONProperty) GetType() string {
 	return schemaTypeUnknown
 }
 
-func (s schemaJSONProperty) GetGoType() (goTypes []string) {
+func (s schemaJSONProperty) GetGoType() (goTypes string) {
 	if s.AllOf != nil {
+		tmpArr := make([]string, 0)
 		for _, r := range s.AllOf {
-			goTypes = append(goTypes, r.GetGoType()...)
+			tmpArr = append(tmpArr, r.GetGoType())
 		}
-		return
+		return strings.Join(tmpArr, "\n")
 	} else if s.OneOf != nil {
+		tmpArr := make([]string, 0)
 		for _, r := range s.OneOf {
-			goTypes = append(goTypes, r.GetGoType()...)
+			tmpArr = append(tmpArr, r.GetGoType())
 		}
-		return
+		return strings.Join(tmpArr, "\n")
 	}
 
 	if len(s.Ref) > 0 {
@@ -168,16 +166,14 @@ func (s schemaJSONProperty) GetGoType() (goTypes []string) {
 			ref = s.Ref
 		}
 
-		goTypes = append(goTypes, getObjectTypeName(ref))
-		return
+		return getObjectTypeName(ref)
 	}
 
 	if fmt.Sprint(s.Type) == schemaTypeArray {
 		return s.Items.GetGoType()
 	}
 
-	goTypes = append(goTypes, detectGoType(fmt.Sprintf("%s", s.Type)))
-	return
+	return detectGoType(fmt.Sprintf("%s", s.Type))
 }
 
 func (s schemaJSONProperty) GetDescription() string {
@@ -198,7 +194,7 @@ func (s schemaJSONProperty) GetProperties(stripPrefix bool) (pMap map[string]sch
 
 		for _, v := range mTypes {
 			if IsBuiltin(v) {
-				objName := convertName(strings.TrimLeft(v.GetGoType()[0], "*"))
+				objName := convertName(strings.TrimLeft(v.GetGoType(), "*"))
 
 				pMap[objName] = *v
 			} else if IsObject(v) {

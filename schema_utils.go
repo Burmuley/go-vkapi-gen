@@ -57,11 +57,11 @@ func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, imports templateImpor
 
 	defer f.Close()
 
-	// Render header and write to the file
+	// Render header and write to the buffer
 	tmpl, err := template.New(strings.Split(headerTmpl, "/")[1]).Funcs(tmplFuncs).ParseFiles(headerTmpl)
 	err = tmpl.Execute(&buf, imports)
 
-	// Read data structures from the channel and append to the file
+	// Read data structures from the channel and append to the buffer
 	for {
 		d, more := <-ch
 
@@ -79,6 +79,7 @@ func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, imports templateImpor
 				log.Println(err)
 			}
 		} else {
+			// Format buffer and write to the file when channel is closed
 			bb := buf.Bytes()
 			if fmtCode, err := format.Source(bb); err != nil {
 				log.Printf("[[%s]] error formatting code: %s. Writing code as is...", fName, err)
@@ -102,7 +103,6 @@ func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, imports templateImpor
 }
 
 func generateTypes(types map[string]schemaJSONProperty, outRootDir, dir, headerTmpl, bodyTmpl string, tmplFuncs map[string]interface{}) {
-	//defCats := make(map[string]struct{})
 	defCats := make(schemaPrefixList)
 	defKeys := make([]string, 0)
 
@@ -204,5 +204,6 @@ func fillFuncs(m map[string]interface{}) map[string]interface{} {
 	m["IsInterface"] = IsInterface
 	m["IsNumber"] = IsNumber
 	m["IsMultiple"] = IsMultiple
+	m["checkChars"] = checkChars
 	return m
 }

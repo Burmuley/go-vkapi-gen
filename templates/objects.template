@@ -1,23 +1,19 @@
 {{define "go_type"}}
     {{- $r := .T.GetGoType -}}
-    {{- $l := len $r -}}
-    {{- if and (le $l 1) (not (IsMultiple .T)) -}}
-        {{- if (checkNames (index $r 0) .R) -}}
-            {{printf " *%s" (index $r 0) -}}
+    {{- if not (IsMultiple .T) -}}
+        {{- if (checkNames $r .R) -}}
+            {{printf " *%s" $r -}}
         {{- else -}}
-            {{printf " %s" (index $r 0) -}}
+            {{printf " %s" $r -}}
         {{end -}}
     {{else -}}
         {{- print " struct {\n" -}}
-        {{- range $t := $r -}}
-            {{ printf "\t\t%s\n" $t -}}
-        {{end -}}
+        {{ printf "\t\t%s\n" $r -}}
         {{print "}" -}}
     {{end -}}
 {{end}}
 {{define "go_multitype"}}
     {{- $r := (.GetProperties true) -}}
-{{/*    {{- $l := len $r -}}*/}}
     {{- print " struct {\n" -}}
     {{- range $k, $v := $r -}}
         {{print "\t\t"}}{{$k}}{{template "go_type" (deco $v $k)}}

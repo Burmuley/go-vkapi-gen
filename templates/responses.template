@@ -1,13 +1,11 @@
 {{define "go_type"}}
     {{- $r := .GetGoType -}}
-    {{- $l := len $r -}}
-    {{- if le $l 1 -}}
-        {{printf "%s" ( printf "%s" (index $r 0)) -}}
+{{/*    {{- $l := len $r -}}*/}}
+    {{- if not (IsMultiple .) -}}
+        {{printf "%s" ( printf "%s" $r) -}}
     {{else -}}
         {{- print " struct {\n" -}}
-        {{- range $t := $r -}}
-            {{ printf "\t\t%s\n" $t -}}
-        {{end -}}
+        {{ printf "\t\t%s\n" $r -}}
         {{print "}" -}}
     {{end -}}
 {{end}}

@@ -97,42 +97,6 @@ type schemaMethodItem struct {
 	Ref       string            `json:"$ref"`
 }
 
-func (s schemaMethodItem) IsString() bool {
-	return s.Type == schemaTypeString && len(s.Ref) == 0
-}
-
-func (s schemaMethodItem) IsInt() bool {
-	return s.Type == schemaTypeInt
-}
-
-func (s schemaMethodItem) IsBuiltin() bool {
-	return len(s.Ref) > 0
-}
-
-func (s schemaMethodItem) IsArray() bool {
-	return s.Type == schemaTypeArray
-}
-
-func (s schemaMethodItem) IsObject() bool {
-	return s.Type == schemaTypeObject
-}
-
-func (s schemaMethodItem) IsBoolean() bool {
-	return s.Type == schemaTypeBoolean
-}
-
-func (s schemaMethodItem) IsInterface() bool {
-	return false
-}
-
-func (s schemaMethodItem) IsNumber() bool {
-	return s.Type == schemaTypeNumber
-}
-
-func (s schemaMethodItem) IsMultiple() bool {
-	return false
-}
-
 func (s schemaMethodItem) GetGoType() string {
 	if len(s.Ref) > 0 {
 		return getObjectTypeName(s.Ref)

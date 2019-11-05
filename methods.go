@@ -74,6 +74,10 @@ func generateMethods(methods []IMethod) {
 			methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
 		}
 
+		if checkMImports(methods[k].GetParameters(), "json.Number") {
+			methodsCats[mPref].Imports["encoding/json"] = struct{}{}
+		}
+
 		// Inspect responses and fill imports
 		if checkMImports(methods[k].GetResponses(), "responses.") {
 			methodsCats[mPref].Imports[responsesImportPath] = struct{}{}

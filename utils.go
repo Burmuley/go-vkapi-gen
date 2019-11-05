@@ -259,7 +259,11 @@ func createChannels(m schemaPrefixList) *map[string]chan interface{} {
 
 func checkMImports(items []IMethodItem, prefix string) bool {
 	for _, v := range items {
-		if (v.IsBuiltin() || v.IsArray()) && strings.Count(v.GetGoType(), prefix) > 0 {
+		if IsNumber(v) {
+			return true
+		}
+
+		if (IsBuiltin(v) || IsArray(v)) && strings.Count(v.GetGoType(), prefix) > 0 {
 			return true
 		}
 	}
@@ -268,17 +272,17 @@ func checkMImports(items []IMethodItem, prefix string) bool {
 }
 
 func checkTImports(item schemaJSONProperty, prefix string) bool {
-	if IsBuiltin(item) && strings.Count(item.GetGoType()[0], prefix) > 0 {
+	if IsBuiltin(item) && strings.Count(item.GetGoType(), prefix) > 0 {
 		return true
 	}
 
-	if IsArray(item) && strings.Count(item.Items.GetGoType()[0], prefix) > 0 {
+	if IsArray(item) && strings.Count(item.Items.GetGoType(), prefix) > 0 {
 		return true
 	}
 
 	if IsObject(item) {
 		for _, v := range item.GetProperties(false) {
-			if (IsBuiltin(v) || IsArray(v) || IsNumber(v)) && strings.Count(v.GetGoType()[0], prefix) > 0 {
+			if (IsBuiltin(v) || IsArray(v) || IsNumber(v)) && strings.Count(v.GetGoType(), prefix) > 0 {
 				return true
 			} else if IsObject(v) {
 				return checkTImports(v, prefix)
@@ -293,4 +297,8 @@ func checkNames(tName, btName string) bool {
 	btName = strings.Trim(btName, "[]()")
 
 	return tName == btName
+}
+
+func checkChars(s string, chars string) bool {
+	return strings.Count(s, chars) > 0
 }

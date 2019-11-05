@@ -16,53 +16,40 @@ limitations under the License.
 package main
 
 type IType interface {
-	GetGoType() []string
+	GetGoType() string
 	GetDescription() string
 	GetType() string
+}
+
+type IContainer interface {
+	GetDefinitions() *map[string]IType
 }
 
 type ITypeProperty interface {
 	GetProperties(stripPrefix bool) map[string]schemaJSONProperty
 }
 
-type IChecker interface {
-	IsString() bool
-	IsInt() bool
-	IsBuiltin() bool
-	IsArray() bool
-	IsObject() bool
-	IsBoolean() bool
-	IsInterface() bool
-	IsNumber() bool
-	IsMultiple() bool
-}
-
-type ITypeChecker interface {
-	IType
-	IChecker
-}
-
 type IMethod interface {
 	GetResponse() IMethodItem
 	GetExtResponse() IMethodItem
-	GetParameters() []IMethodItem
 	GetResponses() []IMethodItem
+	GetParameters() []IMethodItem
 	GetName() string
 	GetDescription() string
 	IsExtended() bool
 }
 
 type IMethodItem interface {
-	GetGoType() string
 	IsRequired() bool
-	GetType() string
 	GetName() string
-	GetDescription() string
-	IChecker
-	//IType
+	IType
 }
 
 type IGenerator interface {
 	Parse(fPath string) error
 	Generate(outputDir string) error
+}
+
+type IRender interface {
+	Render() ([]byte, error)
 }
