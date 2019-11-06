@@ -103,8 +103,18 @@ func (r *responsesSchema) Parse(fPath string) error {
 		return fmt.Errorf("JSON Error: %s", err)
 	}
 
+	r.imports = make(map[string]map[string]struct{})
+
 	for k := range r.Definitions {
 		r.keys = append(r.keys, k)
+
+		if checkTImports(r.Definitions[k], "objects.") {
+			r.imports[getApiNamePrefix(k)] = map[string]struct{}{objectsImportPath: struct{}{}}
+		}
+
+		if checkTImports(r.Definitions[k], "json.Number") {
+			r.imports[getApiNamePrefix(k)] = map[string]struct{}{"encoding/json": struct{}{}}
+		}
 	}
 
 	sort.Strings(r.keys)
