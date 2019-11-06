@@ -32,6 +32,14 @@ type schemaMethods struct {
 	Methods     []schemaMethod   `json:"methods"`
 }
 
+func (s *schemaMethods) Next() (IRender, bool) {
+	panic("implement me")
+}
+
+func (s *schemaMethods) GetKey() string {
+	panic("implement me")
+}
+
 func (s *schemaMethods) Parse(fPath string) error {
 	methods, err := loadSchemaFile(fPath)
 

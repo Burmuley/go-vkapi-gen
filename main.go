@@ -65,12 +65,12 @@ func main() {
 	readEnvVariables()
 	printEnvInfo()
 
-	//if err := copyStatic(outputDirName); err != nil {
-	//	logError(err)
-	//	os.Exit(1)
-	//} else {
-	//	logInfo("static content copied successfully")
-	//}
+	if err := copyStatic(outputDirName); err != nil {
+		logError(err)
+		os.Exit(1)
+	} else {
+		logInfo("static content copied successfully")
+	}
 
 	for k, v := range vkSteps {
 		logStep(k)
