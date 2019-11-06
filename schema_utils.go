@@ -28,6 +28,105 @@ import (
 	"text/template"
 )
 
+func bufWriter(wg *sync.WaitGroup, bCh, hCh chan []byte, prefix, outDir string) {
+	var (
+		f          *os.File
+		err        error
+		bBuf, hBuf bytes.Buffer
+	)
+
+	defer wg.Done()
+
+	fName := filepath.Join(outputDirName, outDir, fmt.Sprintf("%s.go", prefix))
+
+	// Check if a target file exists and remove it if so
+	if checkFileExists(fName) {
+		if err := os.Remove(fName); err != nil {
+			logError(fmt.Errorf("file '%s' exists and can't be removed! Error: %s", fName, err))
+			return
+		}
+
+		logInfo(fmt.Sprintf("##removed file: %s", fName))
+	}
+
+	// Open new file
+	if f, err = os.OpenFile(fName, os.O_CREATE|os.O_RDWR|os.O_SYNC, 0644); err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	defer f.Close()
+
+	// listen for body and header channels
+	for {
+		body, bOk := <-bCh
+		bBuf.Write(body)
+
+		if !bOk {
+			break
+		}
+	}
+
+	header := <-hCh
+
+	// Add header on top of body buffer
+	hBuf.Write(header)
+	hBuf.Write(bBuf.Bytes())
+
+	bb := hBuf.Bytes()
+
+	// Format code && write to the file
+	if fmtCode, err := format.Source(bb); err != nil {
+		log.Printf("[[%s]] error formatting code: %s. Writing code as is...", fName, err)
+		if n, e := f.Write(bb); e != nil {
+			logError(fmt.Errorf("error writing %s: %s", fName, e))
+		} else {
+			logInfo(fmt.Sprintf("successfully written %d bytes (unformatted) to %s.", n, fName))
+		}
+	} else {
+		if n, e := f.Write(fmtCode); e != nil {
+			logError(fmt.Errorf("error writing %s: %s", fName, e))
+		} else {
+			logInfo(fmt.Sprintf("successfully written %d bytes to %s", n, fName))
+		}
+
+	}
+
+}
+
+func generateItems(items IIterator, hTmpl, bTmpl *template.Template, outDir string, prefixes map[string]struct{}, imports map[string]map[string]struct{}) {
+	bodyChans := createByteChannels(prefixes)
+	headChans := createByteChannels(prefixes)
+
+	wg := &sync.WaitGroup{}
+	wg.Add(len(bodyChans))
+
+	for k := range prefixes {
+		go bufWriter(wg, bodyChans[k], headChans[k], k, outDir)
+	}
+
+	for val, ok := items.Next(); ok; val, ok = items.Next() {
+		if buf, err := val.Render(bTmpl); err == nil {
+			bodyChans[getApiNamePrefix(items.GetKey())] <- buf
+		}
+	}
+
+	for k := range prefixes {
+		hBuf := bytes.Buffer{}
+		close(bodyChans[k])
+		tmp := templateImports{
+			Imports: imports[k],
+			Prefix:  k,
+		}
+		if err := hTmpl.Execute(&hBuf, tmp); err == nil {
+			headChans[k] <- hBuf.Bytes()
+		}
+		close(headChans[k])
+	}
+
+	wg.Wait()
+}
+
 func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, imports templateImports, prefix, dir, headerTmpl, bodyTmpl string, tmplFuncs map[string]interface{}) {
 	var (
 		f   *os.File

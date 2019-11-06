@@ -34,9 +34,9 @@ var (
 	}
 
 	vkSteps = map[string]step{
-		"Generating VK API objects":   step{"VK_API_SCHEMA_OBJECTS", &objectsSchema{}},
-		"Generating VK API responses": step{"VK_API_SCHEMA_RESPONSES", &responsesSchema{}},
-		"Generating VK API methods":   step{"VK_API_SCHEMA_METHODS", &schemaMethods{}},
+		"Generating VK API objects": step{"VK_API_SCHEMA_OBJECTS", &objectsSchema{}},
+		//"Generating VK API responses": step{"VK_API_SCHEMA_RESPONSES", &responsesSchema{}},
+		//"Generating VK API methods":   step{"VK_API_SCHEMA_METHODS", &schemaMethods{}},
 	}
 )
 
@@ -65,12 +65,12 @@ func main() {
 	readEnvVariables()
 	printEnvInfo()
 
-	if err := copyStatic(outputDirName); err != nil {
-		logError(err)
-		os.Exit(1)
-	} else {
-		logInfo("static content copied successfully")
-	}
+	//if err := copyStatic(outputDirName); err != nil {
+	//	logError(err)
+	//	os.Exit(1)
+	//} else {
+	//	logInfo("static content copied successfully")
+	//}
 
 	for k, v := range vkSteps {
 		logStep(k)

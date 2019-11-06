@@ -18,10 +18,45 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 )
 
 type responsesSchema struct {
+	keys        []string
+	keyIndex    int
+	initialized bool
 	Definitions map[string]schemaJSONProperty `json:"definitions"`
+}
+
+func (r *responsesSchema) Next() (IRender, bool) {
+	if !r.initialized {
+		r.init()
+	}
+
+	if r.keyIndex <= len(r.keys)-1 {
+		item := r.getItem()
+		r.keyIndex++
+		return item, true
+	}
+
+	return nil, false
+}
+
+func (r *responsesSchema) init() {
+	for k := range r.Definitions {
+		r.keys = append(r.keys, k)
+	}
+
+	sort.Strings(r.keys)
+	r.initialized = true
+	r.keyIndex = 0
+}
+
+func (r *responsesSchema) getItem() IRender {
+	od := typeDefinition{}
+	od[r.keys[r.keyIndex]] = r.Definitions[r.keys[r.keyIndex]]
+
+	return &od
 }
 
 func (r *responsesSchema) Generate(outputDir string) error {

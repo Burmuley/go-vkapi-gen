@@ -85,6 +85,7 @@ func getApiMethodNameSuffix(name string) string {
 
 // readHTTPSchemaFile: reads VK API schema file from HTTP URL and saves it locally in the working directory
 func readHTTPSchemaFile(fileUrl string) ([]byte, error) {
+	logInfo(fmt.Sprintf("Downloading schema file from '%s'", fileUrl))
 	var schemaFile []byte
 
 	httpResp, err := http.Get(fileUrl)
@@ -104,6 +105,7 @@ func readHTTPSchemaFile(fileUrl string) ([]byte, error) {
 }
 
 func readLocalSchemaFile(filePath string) ([]byte, error) {
+	logInfo(fmt.Sprintf("Loading schema file from '%s'", filePath))
 	return ioutil.ReadFile(filePath)
 }
 
@@ -124,8 +126,6 @@ func getObjectTypeName(s string) string {
 		prefix = strings.Split(p[0], ".")[0]
 	}
 
-	//prefix = strings.Join([]string{"*", prefix}, "")
-
 	str := strings.Split(s, "/")
 
 	if len(prefix) == 0 {
@@ -141,11 +141,11 @@ func logString(s string) {
 }
 
 func logError(err error) {
-	logString(fmt.Sprintf("ERROR: %#v\n", err))
+	logString(fmt.Sprintf("[ERROR] %#v\n", err))
 }
 
 func logInfo(s string) {
-	logString(fmt.Sprintf("INFO: %s", s))
+	logString(fmt.Sprintf("[INFO] %s", s))
 }
 
 func logStep(s string) {
@@ -255,6 +255,16 @@ func createChannels(m schemaPrefixList) *map[string]chan interface{} {
 	}
 
 	return &chans
+}
+
+func createByteChannels(m map[string]struct{}) map[string]chan []byte {
+	chans := make(map[string]chan []byte, len(m))
+
+	for k := range m {
+		chans[k] = make(chan []byte, 10)
+	}
+
+	return chans
 }
 
 func checkMImports(items []IMethodItem, prefix string) bool {
