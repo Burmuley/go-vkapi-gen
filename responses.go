@@ -18,22 +18,26 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"path"
 	"sort"
+	"text/template"
 )
 
 type responsesSchema struct {
 	keys        []string
 	keyIndex    int
 	initialized bool
+	imports     map[string]map[string]struct{}
 	Definitions map[string]schemaJSONProperty `json:"definitions"`
 }
 
 func (r *responsesSchema) Next() (IRender, bool) {
 	if !r.initialized {
-		r.init()
+		r.keyIndex = 0
+		r.initialized = true
 	}
 
-	if r.keyIndex <= len(r.keys)-1 {
+	if r.keyIndex < len(r.keys) {
 		item := r.getItem()
 		r.keyIndex++
 		return item, true
@@ -42,14 +46,8 @@ func (r *responsesSchema) Next() (IRender, bool) {
 	return nil, false
 }
 
-func (r *responsesSchema) init() {
-	for k := range r.Definitions {
-		r.keys = append(r.keys, k)
-	}
-
-	sort.Strings(r.keys)
-	r.initialized = true
-	r.keyIndex = 0
+func (r *responsesSchema) GetKey() string {
+	return r.keys[r.keyIndex-1]
 }
 
 func (r *responsesSchema) getItem() IRender {
@@ -61,12 +59,35 @@ func (r *responsesSchema) getItem() IRender {
 
 func (r *responsesSchema) Generate(outputDir string) error {
 	tmplFuncs := make(map[string]interface{})
-	tmplFuncs["convertName"] = convertName
 	tmplFuncs["cutSuffix"] = cutSuffix
 	tmplFuncs["checkNames"] = checkNames
 	tmplFuncs = fillFuncs(tmplFuncs)
 
-	generateTypes(r.Definitions, outputDir, respDirName, respHeaderTmplName, respTmplName, tmplFuncs)
+	//generateTypes(r.Definitions, outputDir, respDirName, respHeaderTmplName, respTmplName, tmplFuncs)
+
+	_, tmplName := path.Split(respTmplName)
+
+	tmpl, err := template.New(tmplName).Funcs(tmplFuncs).ParseFiles(respTmplName)
+
+	if err != nil {
+		return err
+	}
+
+	_, hTmplName := path.Split(respHeaderTmplName)
+
+	hTmpl, err := template.New(hTmplName).Funcs(tmplFuncs).ParseFiles(respHeaderTmplName)
+
+	if err != nil {
+		return err
+	}
+
+	prefixes := map[string]struct{}{}
+
+	for _, k := range r.keys {
+		prefixes[getApiNamePrefix(k)] = struct{}{}
+	}
+
+	generateItems(r, hTmpl, tmpl, "responses", prefixes, r.imports)
 
 	return nil
 }
@@ -81,6 +102,12 @@ func (r *responsesSchema) Parse(fPath string) error {
 	if err := json.Unmarshal(responses, r); err != nil {
 		return fmt.Errorf("JSON Error: %s", err)
 	}
+
+	for k := range r.Definitions {
+		r.keys = append(r.keys, k)
+	}
+
+	sort.Strings(r.keys)
 
 	return nil
 }

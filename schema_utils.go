@@ -22,7 +22,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"sync"
 	"text/template"
@@ -201,61 +200,61 @@ func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, imports templateImpor
 	}
 }
 
-func generateTypes(types map[string]schemaJSONProperty, outRootDir, dir, headerTmpl, bodyTmpl string, tmplFuncs map[string]interface{}) {
-	defCats := make(schemaPrefixList)
-	defKeys := make([]string, 0)
-
-	for k := range types {
-		defKeys = append(defKeys, k)
-		dPref := getApiNamePrefix(k)
-		if _, ok := defCats[dPref]; !ok {
-			defCats[dPref] = templateImports{
-				Imports: make(map[string]struct{}),
-				Prefix:  dPref,
-			}
-		}
-
-		if checkTImports(types[k], "objects.") {
-			defCats[dPref].Imports[objectsImportPath] = struct{}{}
-		}
-
-		if checkTImports(types[k], "responses.") {
-			defCats[dPref].Imports[responsesImportPath] = struct{}{}
-		}
-
-		if checkTImports(types[k], "json.Number") {
-			defCats[dPref].Imports["encoding/json"] = struct{}{}
-		}
-
-	}
-
-	// Create channels map and fill it
-	chans := *createChannels(defCats)
-
-	wg := &sync.WaitGroup{}
-	wg.Add(len(defCats))
-
-	for k := range defCats {
-		go schemaWriter(wg, chans[k], defCats[k], k, dir, headerTmpl, bodyTmpl, tmplFuncs)
-	}
-
-	// Scan types and distribute data among appropriate channels
-	sort.Strings(defKeys)
-	for _, v := range defKeys {
-		if ch, ok := chans[getApiNamePrefix(v)]; ok {
-			ch <- map[string]interface{}{v: types[v]}
-		} else {
-			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", v))
-		}
-	}
-
-	// Close all channels
-	for _, v := range chans {
-		close(v)
-	}
-
-	wg.Wait()
-}
+//func generateTypes(types map[string]schemaJSONProperty, outRootDir, dir, headerTmpl, bodyTmpl string, tmplFuncs map[string]interface{}) {
+//	defCats := make(schemaPrefixList)
+//	defKeys := make([]string, 0)
+//
+//	for k := range types {
+//		defKeys = append(defKeys, k)
+//		dPref := getApiNamePrefix(k)
+//		if _, ok := defCats[dPref]; !ok {
+//			defCats[dPref] = templateImports{
+//				Imports: make(map[string]struct{}),
+//				Prefix:  dPref,
+//			}
+//		}
+//
+//		if checkTImports(types[k], "objects.") {
+//			defCats[dPref].Imports[objectsImportPath] = struct{}{}
+//		}
+//
+//		if checkTImports(types[k], "responses.") {
+//			defCats[dPref].Imports[responsesImportPath] = struct{}{}
+//		}
+//
+//		if checkTImports(types[k], "json.Number") {
+//			defCats[dPref].Imports["encoding/json"] = struct{}{}
+//		}
+//
+//	}
+//
+//	// Create channels map and fill it
+//	chans := *createChannels(defCats)
+//
+//	wg := &sync.WaitGroup{}
+//	wg.Add(len(defCats))
+//
+//	for k := range defCats {
+//		go schemaWriter(wg, chans[k], defCats[k], k, dir, headerTmpl, bodyTmpl, tmplFuncs)
+//	}
+//
+//	// Scan types and distribute data among appropriate channels
+//	sort.Strings(defKeys)
+//	for _, v := range defKeys {
+//		if ch, ok := chans[getApiNamePrefix(v)]; ok {
+//			ch <- map[string]interface{}{v: types[v]}
+//		} else {
+//			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", v))
+//		}
+//	}
+//
+//	// Close all channels
+//	for _, v := range chans {
+//		close(v)
+//	}
+//
+//	wg.Wait()
+//}
 
 func IsString(t IType) bool {
 	return t.GetType() == schemaTypeString
@@ -304,5 +303,6 @@ func fillFuncs(m map[string]interface{}) map[string]interface{} {
 	m["IsNumber"] = IsNumber
 	m["IsMultiple"] = IsMultiple
 	m["checkChars"] = checkChars
+	m["convertName"] = convertName
 	return m
 }

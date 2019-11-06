@@ -55,7 +55,7 @@ func (o *objectsSchema) Next() (IRender, bool) {
 		o.initialized = true
 	}
 
-	if o.keyIndex <= len(o.keys)-1 {
+	if o.keyIndex < len(o.keys) {
 		item := o.getItem()
 		o.keyIndex++
 		return item, true
@@ -73,7 +73,6 @@ func (o *objectsSchema) getItem() IRender {
 
 func (o *objectsSchema) Generate(outputDir string) error {
 	tmplFuncs := make(map[string]interface{})
-	tmplFuncs["convertName"] = convertName
 	tmplFuncs["checkNames"] = checkNames
 	tmplFuncs = fillFuncs(tmplFuncs)
 

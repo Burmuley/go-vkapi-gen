@@ -24,8 +24,12 @@ import (
 )
 
 type schemaMethods struct {
-	Errors  []schemaApiError `json:"errors"`
-	Methods []schemaMethod   `json:"methods"`
+	keys        []string
+	keyIndex    int
+	initialized bool
+	imports     map[string]map[string]struct{}
+	Errors      []schemaApiError `json:"errors"`
+	Methods     []schemaMethod   `json:"methods"`
 }
 
 func (s *schemaMethods) Parse(fPath string) error {
@@ -97,7 +101,6 @@ func generateMethods(methods []IMethod) {
 	funcs := make(map[string]interface{})
 	funcs = fillFuncs(funcs)
 
-	funcs["convertName"] = convertName
 	funcs["convertParam"] = convertParam
 	funcs["getMNameSuffix"] = getApiMethodNameSuffix
 	funcs["getMNamePrefix"] = getApiMethodNamePrefix
