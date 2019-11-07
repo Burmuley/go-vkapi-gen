@@ -51,9 +51,9 @@ func cutSuffix(str, suf string) string {
 	return strings.TrimSuffix(str, suf)
 }
 
-func cutPrefix(str, pref string) string {
-	return strings.TrimPrefix(str, pref)
-}
+//func cutPrefix(str, pref string) string {
+//	return strings.TrimPrefix(str, pref)
+//}
 
 func convertParam(param string) string {
 	nameArr := strings.Split(param, "_")
@@ -72,11 +72,15 @@ func convertParam(param string) string {
 }
 
 func getApiNamePrefix(name string) string {
-	return strings.Split(name, "_")[0]
-}
+	var sep string
 
-func getApiMethodNamePrefix(name string) string {
-	return strings.Split(name, ".")[0]
+	if strings.Count(name, ".") > 0 {
+		sep = "."
+	} else if strings.Count(name, "_") > 0 {
+		sep = "_"
+	}
+
+	return strings.Split(name, sep)[0]
 }
 
 func getApiMethodNameSuffix(name string) string {
@@ -85,25 +89,31 @@ func getApiMethodNameSuffix(name string) string {
 
 // readHTTPSchemaFile: reads VK API schema file from HTTP URL and saves it locally in the working directory
 func readHTTPSchemaFile(fileUrl string) ([]byte, error) {
+	logInfo(fmt.Sprintf("Downloading schema file from '%s'", fileUrl))
 	var schemaFile []byte
 
 	httpResp, err := http.Get(fileUrl)
-	defer httpResp.Body.Close()
+	defer func() {
+		if httpResp != nil {
+			httpResp.Body.Close()
+		}
+	}()
 
 	if err != nil {
-		return nil, fmt.Errorf("could not download from URL %s. Error: %s", fileUrl, err)
+		return []byte{}, fmt.Errorf("could not download from URL %s. Error: %s", fileUrl, err)
 	}
 
 	schemaFile, err = ioutil.ReadAll(httpResp.Body)
 
 	if err != nil {
-		return nil, fmt.Errorf("could not download from URL %s. Error: %s", fileUrl, err)
+		return []byte{}, fmt.Errorf("could not download from URL %s. Error: %s", fileUrl, err)
 	}
 
 	return schemaFile, nil
 }
 
 func readLocalSchemaFile(filePath string) ([]byte, error) {
+	logInfo(fmt.Sprintf("Loading schema file from '%s'", filePath))
 	return ioutil.ReadFile(filePath)
 }
 
@@ -124,8 +134,6 @@ func getObjectTypeName(s string) string {
 		prefix = strings.Split(p[0], ".")[0]
 	}
 
-	//prefix = strings.Join([]string{"*", prefix}, "")
-
 	str := strings.Split(s, "/")
 
 	if len(prefix) == 0 {
@@ -141,11 +149,11 @@ func logString(s string) {
 }
 
 func logError(err error) {
-	logString(fmt.Sprintf("ERROR: %#v\n", err))
+	logString(fmt.Sprintf("[ERROR] %#v\n", err))
 }
 
 func logInfo(s string) {
-	logString(fmt.Sprintf("INFO: %s", s))
+	logString(fmt.Sprintf("[INFO] %s", s))
 }
 
 func logStep(s string) {
@@ -247,14 +255,14 @@ func detectGoType(s string) string {
 	return s
 }
 
-func createChannels(m schemaPrefixList) *map[string]chan interface{} {
-	chans := make(map[string]chan interface{}, len(m))
+func createByteChannels(m map[string]struct{}) map[string]chan []byte {
+	chans := make(map[string]chan []byte, len(m))
 
 	for k := range m {
-		chans[k] = make(chan interface{}, 10)
+		chans[k] = make(chan []byte, 10)
 	}
 
-	return &chans
+	return chans
 }
 
 func checkMImports(items []IMethodItem, prefix string) bool {
