@@ -22,31 +22,29 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sort"
-	"strings"
 	"sync"
 	"text/template"
 )
 
-func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, imports templateImports, prefix, dir, headerTmpl, bodyTmpl string, tmplFuncs map[string]interface{}) {
+func bufWriter(wg *sync.WaitGroup, bCh, hCh chan []byte, prefix, outDir string) {
 	var (
-		f   *os.File
-		err error
-		buf bytes.Buffer
+		f          *os.File
+		err        error
+		bBuf, hBuf bytes.Buffer
 	)
 
 	defer wg.Done()
 
-	fName := filepath.Join(outputDirName, dir, fmt.Sprintf("%s.go", prefix))
+	fName := filepath.Join(outputDirName, outDir, fmt.Sprintf("%s.go", prefix))
 
 	// Check if a target file exists and remove it if so
 	if checkFileExists(fName) {
 		if err := os.Remove(fName); err != nil {
-			log.Fatal(fmt.Sprintf("file '%s' exists and can't be removed! Error: %s", fName, err))
+			logError(fmt.Errorf("file '%s' exists and can't be removed! Error: %s", fName, err))
 			return
 		}
 
-		log.Printf("removed file: %s", fName)
+		logInfo(fmt.Sprintf("##removed file: %s", fName))
 	}
 
 	// Open new file
@@ -57,102 +55,71 @@ func schemaWriter(wg *sync.WaitGroup, ch chan interface{}, imports templateImpor
 
 	defer f.Close()
 
-	// Render header and write to the buffer
-	tmpl, err := template.New(strings.Split(headerTmpl, "/")[1]).Funcs(tmplFuncs).ParseFiles(headerTmpl)
-	err = tmpl.Execute(&buf, imports)
-
-	// Read data structures from the channel and append to the buffer
+	// listen for body and header channels
 	for {
-		d, more := <-ch
+		body, bOk := <-bCh
+		bBuf.Write(body)
 
-		if more {
-			tmpl, err := template.New(strings.Split(bodyTmpl, "/")[1]).Funcs(tmplFuncs).ParseFiles(bodyTmpl)
-
-			if err != nil {
-				log.Println(err)
-				return
-			}
-
-			err = tmpl.Execute(&buf, d)
-
-			if err != nil {
-				log.Println(err)
-			}
-		} else {
-			// Format buffer and write to the file when channel is closed
-			bb := buf.Bytes()
-			if fmtCode, err := format.Source(bb); err != nil {
-				log.Printf("[[%s]] error formatting code: %s. Writing code as is...", fName, err)
-				if n, e := f.Write(bb); e != nil {
-					log.Printf("error writing %s: %s", fName, e)
-				} else {
-					log.Printf("successfully written %d bytes (unformatted) to %s.", n, fName)
-				}
-			} else {
-				if n, e := f.Write(fmtCode); e != nil {
-					log.Printf("error writing %s: %s", fName, e)
-				} else {
-					log.Printf("successfully written %d bytes to %s", n, fName)
-				}
-
-			}
-
-			return
+		if !bOk {
+			break
 		}
 	}
+
+	header := <-hCh
+
+	// Add header on top of body buffer
+	hBuf.Write(header)
+	hBuf.Write(bBuf.Bytes())
+
+	bb := hBuf.Bytes()
+
+	// Format code && write to the file
+	if fmtCode, err := format.Source(bb); err != nil {
+		log.Printf("[[%s]] error formatting code: %s. Writing code as is...", fName, err)
+		if n, e := f.Write(bb); e != nil {
+			logError(fmt.Errorf("error writing %s: %s", fName, e))
+		} else {
+			logInfo(fmt.Sprintf("successfully written %d bytes (unformatted) to %s.", n, fName))
+		}
+	} else {
+		if n, e := f.Write(fmtCode); e != nil {
+			logError(fmt.Errorf("error writing %s: %s", fName, e))
+		} else {
+			logInfo(fmt.Sprintf("successfully written %d bytes to %s", n, fName))
+		}
+
+	}
+
 }
 
-func generateTypes(types map[string]schemaJSONProperty, outRootDir, dir, headerTmpl, bodyTmpl string, tmplFuncs map[string]interface{}) {
-	defCats := make(schemaPrefixList)
-	defKeys := make([]string, 0)
-
-	for k := range types {
-		defKeys = append(defKeys, k)
-		dPref := getApiNamePrefix(k)
-		if _, ok := defCats[dPref]; !ok {
-			defCats[dPref] = templateImports{
-				Imports: make(map[string]struct{}),
-				Prefix:  dPref,
-			}
-		}
-
-		if checkTImports(types[k], "objects.") {
-			defCats[dPref].Imports[objectsImportPath] = struct{}{}
-		}
-
-		if checkTImports(types[k], "responses.") {
-			defCats[dPref].Imports[responsesImportPath] = struct{}{}
-		}
-
-		if checkTImports(types[k], "json.Number") {
-			defCats[dPref].Imports["encoding/json"] = struct{}{}
-		}
-
-	}
-
-	// Create channels map and fill it
-	chans := *createChannels(defCats)
+func generateItems(items IIterator, hTmpl, bTmpl *template.Template, outDir string, prefixes map[string]struct{}, imports map[string]map[string]struct{}) {
+	bodyChans := createByteChannels(prefixes)
+	headChans := createByteChannels(prefixes)
 
 	wg := &sync.WaitGroup{}
-	wg.Add(len(defCats))
+	wg.Add(len(bodyChans))
 
-	for k := range defCats {
-		go schemaWriter(wg, chans[k], defCats[k], k, dir, headerTmpl, bodyTmpl, tmplFuncs)
+	for k := range prefixes {
+		go bufWriter(wg, bodyChans[k], headChans[k], k, outDir)
 	}
 
-	// Scan types and distribute data among appropriate channels
-	sort.Strings(defKeys)
-	for _, v := range defKeys {
-		if ch, ok := chans[getApiNamePrefix(v)]; ok {
-			ch <- map[string]interface{}{v: types[v]}
-		} else {
-			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", v))
+	for val, ok := items.Next(); ok; val, ok = items.Next() {
+		if buf, err := val.Render(bTmpl); err == nil {
+			bodyChans[getApiNamePrefix(items.GetKey())] <- buf
 		}
 	}
 
-	// Close all channels
-	for _, v := range chans {
-		close(v)
+	for k := range prefixes {
+		hBuf := bytes.Buffer{}
+		close(bodyChans[k])
+		tmp := templateImports{
+			Imports: imports[k],
+			Prefix:  k,
+		}
+		if err := hTmpl.Execute(&hBuf, tmp); err == nil {
+			headChans[k] <- hBuf.Bytes()
+		}
+		close(headChans[k])
 	}
 
 	wg.Wait()
@@ -205,5 +172,6 @@ func fillFuncs(m map[string]interface{}) map[string]interface{} {
 	m["IsNumber"] = IsNumber
 	m["IsMultiple"] = IsMultiple
 	m["checkChars"] = checkChars
+	m["convertName"] = convertName
 	return m
 }

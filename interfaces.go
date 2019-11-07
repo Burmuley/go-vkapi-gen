@@ -15,14 +15,12 @@ limitations under the License.
 */
 package main
 
+import "text/template"
+
 type IType interface {
 	GetGoType() string
 	GetDescription() string
 	GetType() string
-}
-
-type IContainer interface {
-	GetDefinitions() *map[string]IType
 }
 
 type ITypeProperty interface {
@@ -51,5 +49,10 @@ type IGenerator interface {
 }
 
 type IRender interface {
-	Render() ([]byte, error)
+	Render(tmpl *template.Template) ([]byte, error)
+}
+
+type IIterator interface {
+	Next() (IRender, bool)
+	GetKey() string
 }
