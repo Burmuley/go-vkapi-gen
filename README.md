@@ -1,6 +1,6 @@
 # VK API Golang SDK Generator
 
-## **!WARNING! Work in Progress!**
+## **! WARNING ! WORK IN PROGRESS !**
 
 Tool to generate Golang (Go) SDK code for VK API implementation based on public JSON schema.
 
@@ -21,8 +21,8 @@ What works:
 * Documentation (i.e. description) is taken from JSON schema files, i.e. no documentation in JSON schema - no documentation in produced code
 
 What TODO:
+* Provide fields explicitly for multi-types with `allOf` and `oneOf` fields
 * Create output directory structure on the fly
-* Fix the issue with `unused imports` for some of `methods` files
 * Add tests for the generator code
 * Add code to generate tests for resulting SDK code
 
