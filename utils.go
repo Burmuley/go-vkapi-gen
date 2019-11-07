@@ -310,3 +310,11 @@ func checkNames(tName, btName string) bool {
 func checkChars(s string, chars string) bool {
 	return strings.Count(s, chars) > 0
 }
+
+func addImport(m map[string]map[string]struct{}, p, i string) {
+	if m[p] == nil {
+		m[p] = make(map[string]struct{})
+	}
+
+	m[p][i] = struct{}{}
+}
