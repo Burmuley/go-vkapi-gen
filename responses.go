@@ -108,12 +108,14 @@ func (r *responsesSchema) Parse(fPath string) error {
 	for k := range r.Definitions {
 		r.keys = append(r.keys, k)
 
-		if checkTImports(r.Definitions[k], "objects.") {
-			r.imports[getApiNamePrefix(k)] = map[string]struct{}{objectsImportPath: struct{}{}}
+		if checkTImports(*r.Definitions[k].Properties["response"], "objects.") {
+			//r.imports[getApiNamePrefix(k)][objectsImportPath] = struct{}{}
+			addImport(r.imports, getApiNamePrefix(k), objectsImportPath)
 		}
 
-		if checkTImports(r.Definitions[k], "json.Number") {
-			r.imports[getApiNamePrefix(k)] = map[string]struct{}{"encoding/json": struct{}{}}
+		if checkTImports(*r.Definitions[k].Properties["response"], "json.Number") {
+			//r.imports[getApiNamePrefix(k)]["encoding/json"] = struct{}{}
+			addImport(r.imports, getApiNamePrefix(k), "encoding/json")
 		}
 	}
 
