@@ -83,10 +83,6 @@ func getApiNamePrefix(name string) string {
 	return strings.Split(name, sep)[0]
 }
 
-//func getApiMethodNamePrefix(name string) string {
-//	return strings.Split(name, ".")[0]
-//}
-
 func getApiMethodNameSuffix(name string) string {
 	return strings.Split(name, ".")[1]
 }
@@ -97,16 +93,20 @@ func readHTTPSchemaFile(fileUrl string) ([]byte, error) {
 	var schemaFile []byte
 
 	httpResp, err := http.Get(fileUrl)
-	defer httpResp.Body.Close()
+	defer func() {
+		if httpResp != nil {
+			httpResp.Body.Close()
+		}
+	}()
 
 	if err != nil {
-		return nil, fmt.Errorf("could not download from URL %s. Error: %s", fileUrl, err)
+		return []byte{}, fmt.Errorf("could not download from URL %s. Error: %s", fileUrl, err)
 	}
 
 	schemaFile, err = ioutil.ReadAll(httpResp.Body)
 
 	if err != nil {
-		return nil, fmt.Errorf("could not download from URL %s. Error: %s", fileUrl, err)
+		return []byte{}, fmt.Errorf("could not download from URL %s. Error: %s", fileUrl, err)
 	}
 
 	return schemaFile, nil
@@ -254,16 +254,6 @@ func detectGoType(s string) string {
 
 	return s
 }
-
-//func createChannels(m schemaPrefixList) *map[string]chan interface{} {
-//	chans := make(map[string]chan interface{}, len(m))
-//
-//	for k := range m {
-//		chans[k] = make(chan interface{}, 10)
-//	}
-//
-//	return &chans
-//}
 
 func createByteChannels(m map[string]struct{}) map[string]chan []byte {
 	chans := make(map[string]chan []byte, len(m))

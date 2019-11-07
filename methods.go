@@ -100,15 +100,6 @@ func (s *schemaMethods) Parse(fPath string) error {
 }
 
 func (s *schemaMethods) Generate(outputDir string) error {
-
-	//iMethods := make([]IMethod, 0)
-	//
-	//for _, v := range s.Methods {
-	//	iMethods = append(iMethods, v)
-	//}
-
-	//generateMethods(iMethods)
-
 	tmplFuncs := make(map[string]interface{})
 	tmplFuncs = fillFuncs(tmplFuncs)
 	tmplFuncs["convertParam"] = convertParam
@@ -154,85 +145,3 @@ func (s *schemaMethods) Generate(outputDir string) error {
 
 	return nil
 }
-
-//func generateMethods(methods []IMethod) {
-//	//methodsCats := make(map[string]struct{})
-//	methodsCats := make(schemaPrefixList)
-//
-//	for k := range methods {
-//		mPref := getApiMethodNamePrefix(methods[k].GetName())
-//
-//		if _, ok := methodsCats[mPref]; !ok {
-//			methodsCats[mPref] = templateImports{
-//				Imports: make(map[string]struct{}),
-//				Prefix:  mPref,
-//			}
-//		}
-//
-//		// Inspect parameters and fill imports
-//		if checkMImports(methods[k].GetParameters(), "objects.") {
-//			methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
-//		}
-//
-//		if checkMImports(methods[k].GetParameters(), "json.Number") {
-//			methodsCats[mPref].Imports["encoding/json"] = struct{}{}
-//		}
-//
-//		// Inspect responses and fill imports
-//		if checkMImports(methods[k].GetResponses(), "responses.") {
-//			methodsCats[mPref].Imports[responsesImportPath] = struct{}{}
-//		}
-//
-//		if checkMImports(methods[k].GetResponses(), "objects.") {
-//			methodsCats[mPref].Imports[objectsImportPath] = struct{}{}
-//		}
-//	}
-//
-//	// Create channels map and fill it
-//	chans := *createChannels(methodsCats)
-//
-//	wg := &sync.WaitGroup{}
-//	wg.Add(len(methodsCats))
-//
-//	funcs := make(map[string]interface{})
-//	funcs = fillFuncs(funcs)
-//
-//	funcs["convertParam"] = convertParam
-//	funcs["getMNameSuffix"] = getApiMethodNameSuffix
-//	funcs["getMNamePrefix"] = getApiMethodNamePrefix
-//	funcs["cutSuffix"] = cutSuffix
-//	funcs["deco"] = func(method IMethod, count int) struct {
-//		M IMethod
-//		C int
-//	} {
-//		return struct {
-//			M IMethod
-//			C int
-//		}{M: method, C: count}
-//	}
-//	funcs["getFLetter"] = func(s string) string {
-//		return string(s[0])
-//	}
-//
-//	for k := range methodsCats {
-//		go schemaWriter(wg, chans[k], methodsCats[k], k, "/", methodsHeaderTmplName, methodsTmplName, funcs)
-//	}
-//
-//	//Scan methods and distribute data among appropriate channels
-//	sort.Slice(methods, func(i, j int) bool { return methods[i].GetName() < methods[j].GetName() })
-//
-//	for _, v := range methods {
-//		if ch, ok := chans[getApiMethodNamePrefix(v.GetName())]; ok {
-//			ch <- v
-//		} else {
-//			log.Fatal(fmt.Sprintf("channel '%s' not found in channels list", getApiMethodNamePrefix(v.GetName())))
-//		}
-//	}
-//
-//	// Close all channels
-//	for _, v := range chans {
-//		close(v)
-//	}
-//
-//	wg.Wait()
-//}

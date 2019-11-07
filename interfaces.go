@@ -23,10 +23,6 @@ type IType interface {
 	GetType() string
 }
 
-type IContainer interface {
-	GetDefinitions() *map[string]IType
-}
-
 type ITypeProperty interface {
 	GetProperties(stripPrefix bool) map[string]schemaJSONProperty
 }
