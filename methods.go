@@ -37,11 +37,8 @@ func (s *schemaMethods) Next() (IRender, bool) {
 		s.initialized = true
 	}
 
-	fmt.Println(s.keyIndex)
-
 	if s.keyIndex < len(s.keys) {
 		item := s.getItem()
-		fmt.Println(s.keyIndex)
 		s.keyIndex++
 		return item, true
 	}
@@ -79,20 +76,24 @@ func (s *schemaMethods) Parse(fPath string) error {
 
 		// Inspect parameters and fill imports
 		if checkMImports(s.Methods[k].GetParameters(), "objects.") {
-			s.imports[mPref] = map[string]struct{}{objectsImportPath: struct{}{}}
+			//s.imports[mPref][objectsImportPath] = struct{}{}
+			addImport(s.imports, mPref, objectsImportPath)
 		}
 
 		if checkMImports(s.Methods[k].GetParameters(), "json.Number") {
-			s.imports[mPref] = map[string]struct{}{"encoding/json": struct{}{}}
+			//s.imports[mPref]["encoding/json"] = struct{}{}
+			addImport(s.imports, mPref, "encoding/json")
 		}
 
 		// Inspect responses and fill imports
 		if checkMImports(s.Methods[k].GetResponses(), "responses.") {
-			s.imports[mPref] = map[string]struct{}{responsesImportPath: struct{}{}}
+			//s.imports[mPref][responsesImportPath] = struct{}{}
+			addImport(s.imports, mPref, responsesImportPath)
 		}
 
 		if checkMImports(s.Methods[k].GetResponses(), "objects.") {
-			s.imports[mPref] = map[string]struct{}{objectsImportPath: struct{}{}}
+			//s.imports[mPref][objectsImportPath] = struct{}{}
+			addImport(s.imports, mPref, objectsImportPath)
 		}
 	}
 

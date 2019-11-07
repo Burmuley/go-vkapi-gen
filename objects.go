@@ -136,15 +136,18 @@ func (o *objectsSchema) Parse(fPath string) error {
 		o.Definitions[k] = tmp
 
 		if checkTImports(tmp, "objects.") {
-			o.imports[getApiNamePrefix(k)] = map[string]struct{}{objectsImportPath: struct{}{}}
+			//o.imports[getApiNamePrefix(k)][objectsImportPath] = struct{}{}
+			addImport(o.imports, getApiNamePrefix(k), objectsImportPath)
 		}
 
 		if checkTImports(tmp, "responses.") {
-			o.imports[getApiNamePrefix(k)] = map[string]struct{}{responsesImportPath: struct{}{}}
+			//o.imports[getApiNamePrefix(k)][responsesImportPath] = struct{}{}
+			addImport(o.imports, getApiNamePrefix(k), responsesImportPath)
 		}
 
 		if checkTImports(tmp, "json.Number") {
-			o.imports[getApiNamePrefix(k)] = map[string]struct{}{"encoding/json": struct{}{}}
+			//o.imports[getApiNamePrefix(k)]["encoding/json"] = struct{}{}
+			addImport(o.imports, getApiNamePrefix(k), "encoding/json")
 		}
 	}
 
