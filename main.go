@@ -36,7 +36,7 @@ var (
 	vkSteps = map[string]step{
 		"Generating VK API objects":   step{"VK_API_SCHEMA_OBJECTS", &objectsSchema{}},
 		"Generating VK API responses": step{"VK_API_SCHEMA_RESPONSES", &responsesSchema{}},
-		//"Generating VK API methods":   step{"VK_API_SCHEMA_METHODS", &schemaMethods{}},
+		"Generating VK API methods":   step{"VK_API_SCHEMA_METHODS", &schemaMethods{}},
 	}
 )
 

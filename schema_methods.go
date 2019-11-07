@@ -16,7 +16,9 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"text/template"
 )
 
 type schemaApiError struct {
@@ -35,6 +37,16 @@ type schemaMethod struct {
 		ExtResponse *schemaMethodItem `json:"extendedResponse"`
 	} `json:"responses"`
 	Errors []*schemaApiError
+}
+
+func (s schemaMethod) Render(tmpl *template.Template) ([]byte, error) {
+	var buf bytes.Buffer
+
+	if err := tmpl.Execute(&buf, s); err != nil {
+		return []byte{}, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func (s schemaMethod) GetDescription() string {

@@ -51,9 +51,9 @@ func cutSuffix(str, suf string) string {
 	return strings.TrimSuffix(str, suf)
 }
 
-func cutPrefix(str, pref string) string {
-	return strings.TrimPrefix(str, pref)
-}
+//func cutPrefix(str, pref string) string {
+//	return strings.TrimPrefix(str, pref)
+//}
 
 func convertParam(param string) string {
 	nameArr := strings.Split(param, "_")
@@ -72,12 +72,20 @@ func convertParam(param string) string {
 }
 
 func getApiNamePrefix(name string) string {
-	return strings.Split(name, "_")[0]
+	var sep string
+
+	if strings.Count(name, ".") > 0 {
+		sep = "."
+	} else if strings.Count(name, "_") > 0 {
+		sep = "_"
+	}
+
+	return strings.Split(name, sep)[0]
 }
 
-func getApiMethodNamePrefix(name string) string {
-	return strings.Split(name, ".")[0]
-}
+//func getApiMethodNamePrefix(name string) string {
+//	return strings.Split(name, ".")[0]
+//}
 
 func getApiMethodNameSuffix(name string) string {
 	return strings.Split(name, ".")[1]
@@ -247,15 +255,15 @@ func detectGoType(s string) string {
 	return s
 }
 
-func createChannels(m schemaPrefixList) *map[string]chan interface{} {
-	chans := make(map[string]chan interface{}, len(m))
-
-	for k := range m {
-		chans[k] = make(chan interface{}, 10)
-	}
-
-	return &chans
-}
+//func createChannels(m schemaPrefixList) *map[string]chan interface{} {
+//	chans := make(map[string]chan interface{}, len(m))
+//
+//	for k := range m {
+//		chans[k] = make(chan interface{}, 10)
+//	}
+//
+//	return &chans
+//}
 
 func createByteChannels(m map[string]struct{}) map[string]chan []byte {
 	chans := make(map[string]chan []byte, len(m))

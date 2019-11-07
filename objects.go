@@ -135,13 +135,13 @@ func (o *objectsSchema) Parse(fPath string) error {
 		setStripPrefix(&tmp, true)
 		o.Definitions[k] = tmp
 
-		//if checkTImports(tmp, "objects.") {
-		//	o.imports[getApiNamePrefix(k)] = map[string]struct{}{objectsImportPath: struct{}{}}
-		//}
-		//
-		//if checkTImports(tmp, "responses.") {
-		//	o.imports[getApiNamePrefix(k)] = map[string]struct{}{responsesImportPath: struct{}{}}
-		//}
+		if checkTImports(tmp, "objects.") {
+			o.imports[getApiNamePrefix(k)] = map[string]struct{}{objectsImportPath: struct{}{}}
+		}
+
+		if checkTImports(tmp, "responses.") {
+			o.imports[getApiNamePrefix(k)] = map[string]struct{}{responsesImportPath: struct{}{}}
+		}
 
 		if checkTImports(tmp, "json.Number") {
 			o.imports[getApiNamePrefix(k)] = map[string]struct{}{"encoding/json": struct{}{}}
