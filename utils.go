@@ -42,6 +42,11 @@ func convertName(jsonName string) string {
 	return strings.Join(nameArr, "")
 }
 
+func nameFRef(ref string) string {
+	str := strings.Split(ref, "/")
+	return str[len(str)-1]
+}
+
 func cutSuffix(str, suf string) string {
 	// don't cut "Response" suffix if it's from objects package
 	if strings.Count(str, "objects.") > 0 && suf == "Response" {
@@ -289,7 +294,7 @@ func checkTImports(item schemaJSONProperty, prefix string) bool {
 	}
 
 	if IsObject(item) {
-		for _, v := range item.GetProperties(false) {
+		for _, v := range item.GetProperties() {
 			if (IsBuiltin(v) || IsArray(v) || IsNumber(v)) && strings.Count(v.GetGoType(), prefix) > 0 {
 				return true
 			} else if IsObject(v) {
@@ -317,4 +322,55 @@ func addImport(m map[string]map[string]struct{}, p, i string) {
 	}
 
 	m[p][i] = struct{}{}
+}
+
+func fillMultitype(multi *schemaJSONProperty, objects *objectsSchema) error {
+	props := make(map[string]*schemaJSONProperty)
+
+	// if allOf elem if builtin - find
+	if multi.AllOf != nil {
+		for _, v := range multi.AllOf {
+			oProps := make(map[string]schemaJSONProperty)
+
+			switch {
+			case IsBuiltin(v):
+				if def, ok := objects.Definitions[nameFRef(v.Ref)]; ok {
+					oProps = def.GetProperties()
+				} else {
+					return fmt.Errorf("could not find '%s' in objects dictionary", nameFRef(v.Ref))
+				}
+
+			case IsObject(v):
+				oProps = v.GetProperties()
+			}
+
+			for kk, vv := range oProps {
+				val := vv
+				props[kk] = &val
+			}
+		}
+
+		if len(props) > 0 {
+			multi.Properties = props
+		}
+	}
+
+	if multi.OneOf != nil {
+		for _, v := range multi.OneOf {
+			if v.GetType() == schemaTypeBuiltin {
+				props[nameFRef(v.Ref)] = v
+			} else if v.GetType() == schemaTypeObject {
+				for kk, vv := range v.GetProperties() {
+					val := vv
+					props[kk] = &val
+				}
+			}
+		}
+
+		if len(props) > 0 {
+			multi.Properties = props
+		}
+	}
+
+	return nil
 }

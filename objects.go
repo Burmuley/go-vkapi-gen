@@ -126,6 +126,8 @@ func (o *objectsSchema) Parse(fPath string) error {
 		return fmt.Errorf("JSON Error: %s", err)
 	}
 
+	objectsGlobal = o
+
 	// fill the `stripPrefix` variable with 'true' for objects
 	o.imports = make(map[string]map[string]struct{})
 
@@ -133,6 +135,13 @@ func (o *objectsSchema) Parse(fPath string) error {
 		o.keys = append(o.keys, k)
 		tmp := o.Definitions[k]
 		setStripPrefix(&tmp, true)
+
+		if tmp.GetType() == schemaTypeMultiple {
+			if err := fillMultitype(&tmp, o); err != nil {
+				return err
+			}
+		}
+
 		o.Definitions[k] = tmp
 
 		if checkTImports(tmp, "objects.") {

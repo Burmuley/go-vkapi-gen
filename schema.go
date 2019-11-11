@@ -180,32 +180,32 @@ func (s schemaJSONProperty) GetDescription() string {
 	return s.Descr
 }
 
-func (s schemaJSONProperty) GetProperties(stripPrefix bool) (pMap map[string]schemaJSONProperty) {
-	if len(s.AllOf) > 0 || len(s.OneOf) > 0 {
-		var mTypes []*schemaJSONProperty
-
-		if len(s.AllOf) > 0 {
-			mTypes = s.AllOf
-		} else if len(s.OneOf) > 0 {
-			mTypes = s.OneOf
-		}
-
-		pMap = make(map[string]schemaJSONProperty)
-
-		for _, v := range mTypes {
-			if IsBuiltin(v) {
-				objName := convertName(strings.TrimLeft(v.GetGoType(), "*"))
-
-				pMap[objName] = *v
-			} else if IsObject(v) {
-				for k, v := range v.GetProperties(stripPrefix) {
-					pMap[k] = v
-				}
-			}
-		}
-
-		return pMap
-	}
+func (s schemaJSONProperty) GetProperties() (pMap map[string]schemaJSONProperty) {
+	//if len(s.AllOf) > 0 || len(s.OneOf) > 0 {
+	//	var mTypes []*schemaJSONProperty
+	//
+	//	if len(s.AllOf) > 0 {
+	//		mTypes = s.AllOf
+	//	} else if len(s.OneOf) > 0 {
+	//		mTypes = s.OneOf
+	//	}
+	//
+	//	pMap = make(map[string]schemaJSONProperty)
+	//
+	//	for _, v := range mTypes {
+	//		if IsBuiltin(v) {
+	//			objName := convertName(strings.TrimLeft(v.GetGoType(), "*"))
+	//
+	//			pMap[objName] = *v
+	//		} else if IsObject(v) {
+	//			for k, v := range v.GetProperties() {
+	//				pMap[k] = v
+	//			}
+	//		}
+	//	}
+	//
+	//	return pMap
+	//}
 
 	if len(s.Properties) > 0 {
 		pMap = make(map[string]schemaJSONProperty, len(s.Properties))
