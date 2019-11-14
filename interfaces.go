@@ -23,8 +23,8 @@ type IType interface {
 	GetType() string
 }
 
-type ITypeProperty interface {
-	GetProperties(stripPrefix bool) map[string]schemaJSONProperty
+type ITypeContainer interface {
+	GetProperties() map[string]schemaJSONProperty
 }
 
 type IMethod interface {

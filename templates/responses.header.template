@@ -23,11 +23,11 @@ limitations under the License.
 package responses
 
 {{if gt (len .Imports) 0 }}
-    import (
+import (
     {{ range $k, $v := .Imports -}}
-        {{ printf "\"%s\"" $k }}
-    {{end}}
-    )
+        {{ printf "\"%s\"\n" $k -}}
+    {{end -}}
+)
 {{end}}
 
 

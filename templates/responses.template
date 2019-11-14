@@ -1,28 +1,44 @@
 {{define "go_type"}}
     {{- $r := .GetGoType -}}
-{{/*    {{- $l := len $r -}}*/}}
-    {{- if not (IsMultiple .) -}}
-        {{printf "%s" ( printf "%s" $r) -}}
-    {{else -}}
-        {{- print " struct {\n" -}}
-        {{ printf "\t\t%s\n" $r -}}
+    {{if IsArray . -}}
+        {{if .Items.Items -}}
+            {{if IsMultiple .Items.Items -}}
+                {{- print "struct {\n" -}}
+                {{range $ok, $ov := (.Items.Items.GetProperties) -}}
+                    {{print "\t"}}{{convertName $ok}} {{if (IsArray $ov)}}[]{{end}}{{template "go_type" $ov}} `json:"{{$ok}}"`  {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}}{{end}}
+                {{end -}}
+                {{print "}" -}}
+            {{else -}}
+                {{- printf "%s" .Items.GetGoType -}}
+            {{end -}}
+        {{else -}}
+            {{- printf "%s" .Items.GetGoType -}}
+        {{end -}}
+    {{else if (IsMultiple .) -}}
+        {{- print "struct {\n" -}}
+        {{range $ok, $ov := (.GetProperties) -}}
+            {{print "\t"}}{{convertName $ok}} {{if (IsArray $ov)}}[]{{end}}{{template "go_type" $ov}} `json:"{{$ok}}"`  {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}}{{end}}
+        {{end -}}
         {{print "}" -}}
+    {{- else -}}
+        {{- printf "%s" $r -}}
     {{end -}}
 {{end}}
 {{range $key, $value := . -}}
-// {{cutSuffix (convertName $key) "Response"}} type represents `{{$key}}` API response object
-{{ $response := (index ($value.GetProperties false) "response") -}}
-{{if or (IsInt $response) (IsString $response) (IsBuiltin $response) (IsArray $response) (IsNumber $response) (IsInterface $response) (IsBoolean $response) -}}
-type {{cutSuffix (convertName $key) "Response"}} {{template "go_type" $response}}{{ if (len $response.GetDescription) gt 0}} // {{$response.GetDescription}}{{end}}
-{{else if (IsObject $response) -}}
-type {{cutSuffix (convertName $key) "Response"}} struct {
-{{if (IsObject $response) -}}
-{{range $ok, $ov := ($response.GetProperties false) -}}
-{{print "\t"}}{{convertName $ok}} {{if (IsArray $ov)}}[]{{end}}{{template "go_type" $ov}} `json:"{{$ok}}"`  {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}}{{end}}
-{{end -}}
-}
-{{else -}}
-{{template "go_type" $response}}
-{{end}}
-{{end -}}
+    {{$kname := (cutSuffix (convertName $key) "Response") -}}
+    // {{$kname}} type represents `{{$key}}` API response object
+    {{ $resp := (index ($value.GetProperties) "response") -}}
+    {{if or (IsInt $resp) (IsString $resp) (IsBuiltin $resp) (IsArray $resp) (IsNumber $resp) (IsInterface $resp) (IsBoolean $resp) -}}
+        type {{$kname}} {{template "go_type" $resp}}{{ if (len $resp.GetDescription) gt 0}} // {{$resp.GetDescription}}{{end}}
+    {{else if (IsObject $resp) -}}
+        type {{$kname}} struct {
+        {{if or (IsObject $resp) (IsMultiple $resp) -}}
+            {{range $ok, $ov := ($resp.GetProperties ) -}}
+                {{print "\t"}}{{convertName $ok}} {{if (IsArray $ov)}}[]{{end}}{{template "go_type" $ov}} `json:"{{$ok}}"`  {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}}{{end}}
+            {{end -}}
+        }
+        {{else -}}
+            {{template "go_type" $resp}}
+        {{end}}
+    {{end -}}
 {{end -}}

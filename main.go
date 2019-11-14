@@ -22,6 +22,7 @@ import (
 )
 
 type step struct {
+	msg   string
 	fName string
 	sObj  IGenerator
 }
@@ -33,11 +34,15 @@ var (
 		"VK_API_SCHEMA_RESPONSES": "https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/responses.json",
 	}
 
-	vkSteps = map[string]step{
-		"Generating VK API objects":   step{"VK_API_SCHEMA_OBJECTS", &objectsSchema{}},
-		"Generating VK API responses": step{"VK_API_SCHEMA_RESPONSES", &responsesSchema{}},
-		"Generating VK API methods":   step{"VK_API_SCHEMA_METHODS", &schemaMethods{}},
+	vkSteps = []step{
+		// responses depends on objects
+		{"Generating VK API objects", "VK_API_SCHEMA_OBJECTS", &objectsSchema{}},
+		{"Generating VK API responses", "VK_API_SCHEMA_RESPONSES", &responsesSchema{}},
+		{"Generating VK API methods", "VK_API_SCHEMA_METHODS", &schemaMethods{}},
 	}
+
+	// copy objects container to render `allOf` and `oneOf` properties in responses
+	objectsGlobal *objectsSchema
 )
 
 // readEnvVariables: Read environment variables to override defaults
@@ -72,8 +77,8 @@ func main() {
 		logInfo("static content copied successfully")
 	}
 
-	for k, v := range vkSteps {
-		logStep(k)
+	for _, v := range vkSteps {
+		logStep(v.msg)
 
 		if err := v.sObj.Parse(vkSchemaFiles[v.fName]); err != nil {
 			logError(err)
