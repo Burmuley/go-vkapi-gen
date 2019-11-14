@@ -16,9 +16,11 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
+	"text/template"
 )
 
 type templateImports struct {
@@ -123,6 +125,7 @@ type schemaJSONProperty struct {
 	Items       *schemaItemsWrapper            `json:"items,omitempty"`
 	Ref         string                         `json:"$ref,omitempty"`
 	stripPrefix bool                           `json:"-"`
+	addPrefix   string                         `json:"-"`
 }
 
 func (s schemaJSONProperty) GetType() string {
@@ -162,6 +165,13 @@ func (s schemaJSONProperty) GetGoType() (goTypes string) {
 		if s.stripPrefix {
 			stripped := strings.Split(s.Ref, "#")
 			ref = strings.Join([]string{"#", stripped[len(stripped)-1]}, "")
+		} else if len(s.addPrefix) > 0 {
+			stripped := strings.Split(s.Ref, "#")
+			if stripped[0] != s.addPrefix {
+				ref = strings.Join([]string{s.addPrefix, "#", stripped[len(stripped)-1]}, "")
+			} else {
+				ref = s.Ref
+			}
 		} else {
 			ref = s.Ref
 		}
@@ -180,33 +190,7 @@ func (s schemaJSONProperty) GetDescription() string {
 	return s.Descr
 }
 
-func (s schemaJSONProperty) GetProperties(stripPrefix bool) (pMap map[string]schemaJSONProperty) {
-	if len(s.AllOf) > 0 || len(s.OneOf) > 0 {
-		var mTypes []*schemaJSONProperty
-
-		if len(s.AllOf) > 0 {
-			mTypes = s.AllOf
-		} else if len(s.OneOf) > 0 {
-			mTypes = s.OneOf
-		}
-
-		pMap = make(map[string]schemaJSONProperty)
-
-		for _, v := range mTypes {
-			if IsBuiltin(v) {
-				objName := convertName(strings.TrimLeft(v.GetGoType(), "*"))
-
-				pMap[objName] = *v
-			} else if IsObject(v) {
-				for k, v := range v.GetProperties(stripPrefix) {
-					pMap[k] = v
-				}
-			}
-		}
-
-		return pMap
-	}
-
+func (s schemaJSONProperty) GetProperties() (pMap map[string]schemaJSONProperty) {
 	if len(s.Properties) > 0 {
 		pMap = make(map[string]schemaJSONProperty, len(s.Properties))
 
@@ -218,4 +202,20 @@ func (s schemaJSONProperty) GetProperties(stripPrefix bool) (pMap map[string]sch
 	}
 
 	return nil
+}
+
+//////////////////////////////////////////////////////////////////////
+// VK API type definition
+//////////////////////////////////////////////////////////////////////
+type typeDefinition map[string]IType
+
+func (o *typeDefinition) Render(tmpl *template.Template) ([]byte, error) {
+	var buf bytes.Buffer
+
+	if err := tmpl.Execute(&buf, o); err != nil {
+		return []byte{}, err
+	}
+
+	return buf.Bytes(), nil
+
 }
