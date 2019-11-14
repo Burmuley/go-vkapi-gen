@@ -16,26 +16,12 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"path"
 	"sort"
 	"text/template"
 )
-
-type typeDefinition map[string]IType
-
-func (o *typeDefinition) Render(tmpl *template.Template) ([]byte, error) {
-	var buf bytes.Buffer
-
-	if err := tmpl.Execute(&buf, o); err != nil {
-		return []byte{}, err
-	}
-
-	return buf.Bytes(), nil
-
-}
 
 type objectsSchema struct {
 	keys        []string
@@ -163,41 +149,4 @@ func (o *objectsSchema) Parse(fPath string) error {
 	sort.Strings(o.keys)
 
 	return nil
-}
-
-func setStripPrefix(j *schemaJSONProperty, val bool) {
-	j.stripPrefix = val
-
-	// set stripPrefix in allOf and OneOf
-	for _, v := range j.AllOf {
-		setStripPrefix(v, val)
-	}
-
-	for _, v := range j.OneOf {
-		setStripPrefix(v, val)
-	}
-
-	// set stripPrefix in Properties
-	for _, v := range j.Properties {
-		if IsBuiltin(v) || IsArray(v) {
-			setStripPrefix(v, val)
-		}
-	}
-
-	// set stripPrefix in Items
-	if j.Items != nil {
-		for _, v := range j.Items.ItemsArr {
-			if IsBuiltin(*v) {
-				setStripPrefix(v, val)
-			}
-		}
-
-		if j.Items.Items != nil {
-			if IsBuiltin(j.Items.Items) {
-				setStripPrefix(j.Items.Items, val)
-			}
-
-		}
-	}
-
 }

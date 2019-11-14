@@ -293,7 +293,7 @@ func checkTImports(item schemaJSONProperty, prefix string) bool {
 		return true
 	}
 
-	if IsObject(item) {
+	if IsObject(item) || IsMultiple(item) {
 		for _, v := range item.GetProperties() {
 			if (IsBuiltin(v) || IsArray(v) || IsNumber(v)) && strings.Count(v.GetGoType(), prefix) > 0 {
 				return true
@@ -327,21 +327,34 @@ func addImport(m map[string]map[string]struct{}, p, i string) {
 func fillMultitype(multi *schemaJSONProperty, objects *objectsSchema) error {
 	props := make(map[string]*schemaJSONProperty)
 
-	// if allOf elem if builtin - find
 	if multi.AllOf != nil {
 		for _, v := range multi.AllOf {
 			oProps := make(map[string]schemaJSONProperty)
 
 			switch {
+			// if allOf elem is builtin - find reference object and
 			case IsBuiltin(v):
 				if def, ok := objects.Definitions[nameFRef(v.Ref)]; ok {
 					oProps = def.GetProperties()
+
+					for kk := range oProps {
+						val := oProps[kk]
+						setStripPrefix(&val, multi.stripPrefix)
+						oProps[kk] = val
+
+					}
 				} else {
 					return fmt.Errorf("could not find '%s' in objects dictionary", nameFRef(v.Ref))
 				}
 
 			case IsObject(v):
 				oProps = v.GetProperties()
+				for kk := range oProps {
+					val := oProps[kk]
+					setStripPrefix(&val, multi.stripPrefix)
+					oProps[kk] = val
+
+				}
 			}
 
 			for kk, vv := range oProps {
@@ -362,6 +375,7 @@ func fillMultitype(multi *schemaJSONProperty, objects *objectsSchema) error {
 			} else if v.GetType() == schemaTypeObject {
 				for kk, vv := range v.GetProperties() {
 					val := vv
+					setStripPrefix(&val, multi.stripPrefix)
 					props[kk] = &val
 				}
 			}
@@ -373,4 +387,78 @@ func fillMultitype(multi *schemaJSONProperty, objects *objectsSchema) error {
 	}
 
 	return nil
+}
+
+func setStripPrefix(j *schemaJSONProperty, val bool) {
+	j.stripPrefix = val
+
+	// set stripPrefix in allOf and OneOf
+	for _, v := range j.AllOf {
+		setStripPrefix(v, val)
+	}
+
+	for _, v := range j.OneOf {
+		setStripPrefix(v, val)
+	}
+
+	// set stripPrefix in Properties
+	for _, v := range j.Properties {
+		if IsBuiltin(v) || IsArray(v) {
+			setStripPrefix(v, val)
+		}
+	}
+
+	// set stripPrefix in Items
+	if j.Items != nil {
+		for _, v := range j.Items.ItemsArr {
+			if IsBuiltin(*v) {
+				setStripPrefix(v, val)
+			}
+		}
+
+		if j.Items.Items != nil {
+			if IsBuiltin(j.Items.Items) {
+				setStripPrefix(j.Items.Items, val)
+			}
+
+		}
+	}
+
+}
+
+func setAddPrefix(j *schemaJSONProperty, val string) {
+	j.addPrefix = val
+
+	// set stripPrefix in allOf and OneOf
+	for _, v := range j.AllOf {
+		setAddPrefix(v, val)
+	}
+
+	for _, v := range j.OneOf {
+		setAddPrefix(v, val)
+	}
+
+	// set stripPrefix in Properties
+	for _, v := range j.Properties {
+		if IsBuiltin(v) || IsArray(v) {
+			setAddPrefix(v, val)
+		}
+	}
+
+	// set stripPrefix in Items
+	if j.Items != nil {
+		for _, v := range j.Items.ItemsArr {
+			if IsBuiltin(*v) {
+				setAddPrefix(v, val)
+			}
+		}
+
+		if j.Items.Items != nil {
+			if IsBuiltin(j.Items.Items) {
+				setAddPrefix(j.Items.Items, val)
+			}
+
+		}
+	}
+
 }

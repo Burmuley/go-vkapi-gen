@@ -35,9 +35,10 @@ var (
 	}
 
 	vkSteps = []step{
+		// responses depends on objects
 		{"Generating VK API objects", "VK_API_SCHEMA_OBJECTS", &objectsSchema{}},
-		//{"Generating VK API responses", "VK_API_SCHEMA_RESPONSES", &responsesSchema{}},
-		//{"Generating VK API methods", "VK_API_SCHEMA_METHODS", &schemaMethods{}},
+		{"Generating VK API responses", "VK_API_SCHEMA_RESPONSES", &responsesSchema{}},
+		{"Generating VK API methods", "VK_API_SCHEMA_METHODS", &schemaMethods{}},
 	}
 
 	// copy objects container to render `allOf` and `oneOf` properties in responses

@@ -63,8 +63,6 @@ func (r *responsesSchema) Generate(outputDir string) error {
 	tmplFuncs["checkNames"] = checkNames
 	tmplFuncs = fillFuncs(tmplFuncs)
 
-	//generateTypes(r.Definitions, outputDir, respDirName, respHeaderTmplName, respTmplName, tmplFuncs)
-
 	_, tmplName := path.Split(respTmplName)
 
 	tmpl, err := template.New(tmplName).Funcs(tmplFuncs).ParseFiles(respTmplName)
@@ -93,6 +91,18 @@ func (r *responsesSchema) Generate(outputDir string) error {
 }
 
 func (r *responsesSchema) Parse(fPath string) error {
+	// check objectsGlobal before we can proceed
+	if objectsGlobal == nil {
+		return fmt.Errorf("global objects container is empty")
+	}
+
+	for key := range objectsGlobal.Definitions {
+		val := objectsGlobal.Definitions[key]
+		setStripPrefix(&val, false)
+		setAddPrefix(&val, "objects.json")
+		objectsGlobal.Definitions[key] = val
+	}
+
 	responses, err := loadSchemaFile(fPath)
 
 	if err != nil {
@@ -107,6 +117,30 @@ func (r *responsesSchema) Parse(fPath string) error {
 
 	for k := range r.Definitions {
 		r.keys = append(r.keys, k)
+		cType := r.Definitions[k].Properties["response"].GetType()
+
+		if cType == schemaTypeMultiple {
+			if err := fillMultitype(r.Definitions[k].Properties["response"], objectsGlobal); err != nil {
+				return err
+			}
+		}
+
+		if cType == schemaTypeObject {
+			for kk, vv := range r.Definitions[k].Properties["response"].GetProperties() {
+				if vv.GetType() == schemaTypeArray && vv.Items.Items != nil {
+					val := vv
+					if err := fillMultitype(val.Items.Items, objectsGlobal); err != nil {
+						return err
+					}
+
+					r.Definitions[k].Properties["response"].Properties[kk] = &val
+				} else if vv.GetType() == schemaTypeMultiple {
+					if err := fillMultitype(&vv, objectsGlobal); err != nil {
+						return err
+					}
+				}
+			}
+		}
 
 		if checkTImports(*r.Definitions[k].Properties["response"], "objects.") {
 			//r.imports[getApiNamePrefix(k)][objectsImportPath] = struct{}{}
