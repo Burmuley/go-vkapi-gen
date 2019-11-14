@@ -13,28 +13,25 @@
     {{end -}}
 {{end}}
 {{define "go_multitype"}}
-    {{- $r := (.GetProperties true) -}}
+    {{- $r := (.GetProperties) -}}
     {{- print " struct {\n" -}}
     {{- range $k, $v := $r -}}
         {{print "\t\t"}}{{$k}}{{template "go_type" (deco $v $k)}}
     {{end -}}
     {{print "}" -}}
+    //MULTI!
 {{end}}
 {{range $key, $value := . -}}
 {{$tname := (convertName $key) -}}
 // {{$tname}} type represents `{{$key}}` API object
 {{if or (IsInt $value) (IsString $value) (IsBuiltin $value) (IsArray $value) (IsNumber $value) (IsInterface $value) -}}
 type {{$tname}} {{template "go_type" (deco $value $tname)}}{{ if (len $value.GetDescription) gt 0}} // {{$value.GetDescription}}{{end}}
-{{else if (IsObject $value) -}}
+{{else if or (IsObject $value) (IsMultiple $value) -}}
 type {{$tname -}}
-    {{if (IsObject $value) -}}
-        {{printf " %s" "struct {"}}
-    {{range $ok, $ov := ($value.GetProperties true) -}}
+    {{- printf " %s" "struct {"}}
+    {{range $ok, $ov := ($value.GetProperties) -}}
         {{print "\t"}}{{convertName $ok}} {{if (IsArray $ov)}}[]{{end}}{{template "go_type" (deco $ov $tname)}} `json:"{{$ok}}"`  {{ if (len $ov.GetDescription) gt 0}}// {{$ov.GetDescription}}{{end}}
     {{end -}}
-    {{end -}}
 }
-{{else if (IsMultiple $value) -}}
-type {{$tname -}} {{template "go_type" (deco $value $tname)}}
 {{end}}
 {{end -}}

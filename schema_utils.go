@@ -44,7 +44,7 @@ func bufWriter(wg *sync.WaitGroup, bCh, hCh chan []byte, prefix, outDir string) 
 			return
 		}
 
-		logInfo(fmt.Sprintf("##removed file: %s", fName))
+		logInfo(fmt.Sprintf("removed file: %s", fName))
 	}
 
 	// Open new file
@@ -106,6 +106,9 @@ func generateItems(items IIterator, hTmpl, bTmpl *template.Template, outDir stri
 	for val, ok := items.Next(); ok; val, ok = items.Next() {
 		if buf, err := val.Render(bTmpl); err == nil {
 			bodyChans[getApiNamePrefix(items.GetKey())] <- buf
+		} else {
+			logError(err)
+			logError(err.(template.ExecError).Err)
 		}
 	}
 
