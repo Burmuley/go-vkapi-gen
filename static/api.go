@@ -18,7 +18,7 @@ package go_vkapi
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.com/Burmuley/go-vkapi/responses"
+	"github.com/Burmuley/go-vkapi/responses"
 	"io/ioutil"
 	"net/http"
 	"net/url"
