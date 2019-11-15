@@ -336,12 +336,15 @@ func fillMultitype(multi *schemaJSONProperty, objects *objectsSchema) error {
 			case IsBuiltin(v):
 				if def, ok := objects.Definitions[nameFRef(v.Ref)]; ok {
 					oProps = def.GetProperties()
+					if len(oProps) == 0 {
+						fillMultitype(&def, objects)
+						oProps = def.GetProperties()
+					}
 
 					for kk := range oProps {
 						val := oProps[kk]
 						setStripPrefix(&val, multi.stripPrefix)
 						oProps[kk] = val
-
 					}
 				} else {
 					return fmt.Errorf("could not find '%s' in objects dictionary", nameFRef(v.Ref))
