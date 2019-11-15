@@ -10,14 +10,14 @@ Tool to generate Golang (Go) SDK code for VK API implementation based on public 
 
 This tool uses official [VK API JSON schema](https://github.com/VKCOM/vk-api-schema) as input to generate VK API SDK code for Golang.
 
-The result code is located here: [https://gitlab.com/Burmuley/go-vkapi](https://gitlab.com/Burmuley/go-vkapi).
-See [README.md](https://gitlab.com/Burmuley/go-vkapi/blob/master/README.md) in the target repository for details about SDK.
+The result code is located here: [https://github.com/Burmuley/go-vkapi](https://github.com/Burmuley/go-vkapi).
+See [README.md](https://github.com/Burmuley/go-vkapi/blob/master/README.md) in the target repository for details about SDK.
 
 ### Current status
 What works:
-* Golang types generation for all VK API data structures enlisted in [`objects.json`](https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/objects.json) schema; result code is located at [`objects`](https://gitlab.com/Burmuley/go-vkapi/tree/master/objects) subdirectory
-* Golang types generation for all VK API responses enlisted in [`responses.json`](https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/responses.json) schema; result code is located at [`responses`](https://gitlab.com/Burmuley/go-vkapi/tree/master/responses) subdirectory
-* Golang types generation for all VK API methods enlisted in [`metods.json`](https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/methods.json) schema; result code is located at [`repo root`](https://gitlab.com/Burmuley/go-vkapi/tree/master)
+* Golang types generation for all VK API data structures enlisted in [`objects.json`](https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/objects.json) schema; result code is located at [`objects`](https://github.com/Burmuley/go-vkapi/tree/master/objects) subdirectory
+* Golang types generation for all VK API responses enlisted in [`responses.json`](https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/responses.json) schema; result code is located at [`responses`](https://github.com/Burmuley/go-vkapi/tree/master/responses) subdirectory
+* Golang types generation for all VK API methods enlisted in [`metods.json`](https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/methods.json) schema; result code is located at [`repo root`](https://github.com/Burmuley/go-vkapi/tree/master)
 * Include of static code (common interfaces and VK API interaction utils)
 * Golang code formatting for generated code
 * Documentation (i.e. description) is taken from JSON schema files, i.e. no documentation in JSON schema - no documentation in produced code

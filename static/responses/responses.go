@@ -17,7 +17,7 @@ package responses
 
 import (
 	"encoding/json"
-	"gitlab.com/Burmuley/go-vkapi/errors"
+	"github.com/Burmuley/go-vkapi/errors"
 )
 
 type RequestParams struct {

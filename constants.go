@@ -34,8 +34,8 @@ const (
 )
 
 const (
-	objectsImportPath   = "gitlab.com/Burmuley/go-vkapi/objects"
-	responsesImportPath = "gitlab.com/Burmuley/go-vkapi/responses"
+	objectsImportPath   = "github.com/Burmuley/go-vkapi/objects"
+	responsesImportPath = "github.com/Burmuley/go-vkapi/responses"
 )
 
 // Response and Object types

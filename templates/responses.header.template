@@ -17,7 +17,7 @@ limitations under the License.
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // WARNING! AUTOMATICALLY GENERATED CONTENT! DON'T CHANGE IT MANUALLY!                                     //
 // Source schema can be found at https://github.com/VKCOM/vk-api-schema/blob/master/responses.json         //
-// Code generator location: https://gitlab.com/Burmuley/go-vkapi-gen                                       //
+// Code generator location: https://github.com/Burmuley/go-vkapi-gen                                       //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 package responses
