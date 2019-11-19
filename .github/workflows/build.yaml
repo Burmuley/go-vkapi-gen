@@ -51,11 +51,11 @@ jobs:
 #      - name: Run further steps only on master
 #        shell: bash
 #        run:  if [[ `git branch | grep \* | awk '{print $2}'` != "master" ]]; then echo "NOT MASTER" && exit 1; fi
-#      - name: Download built artefact
-#        uses: actions/download-artifact@v1
-#        with:
-#          name: go-vkapi-gen
-#          path: go-vkapi-gen-artifact
+      - name: Download built artefact
+        uses: actions/download-artifact@v1
+        with:
+          name: go-vkapi-gen
+          path: go-vkapi-gen-artifact
 #      - name: Generate VK API SDK code
 #        shell: bash
 #        run: mv go-vkapi-gen-artifact/go-vkapi-gen . && chmod +x go-vkapi-gen && ./go-vkapi-gen
