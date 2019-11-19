@@ -63,7 +63,7 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: go-vkapi-gen-output
-          path: output
+          path: .
       - name: List dir contents
         shell: bash
         run: ls -lR
