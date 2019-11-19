@@ -32,7 +32,7 @@ jobs:
           name: go-vkapi-gen
       - name: Run dummy test
         shell: bash
-        run: ./go-vkapi-gen && cd output && go build || exit 1
+        run: mv go-vkapi-gen/go-vkapi-gen . && ./go-vkapi-gen && cd output && go build || exit 1
   deploy:
     name: Deploy resulting code to the destination repo
     needs: build
@@ -47,6 +47,6 @@ jobs:
           name: go-vkapi-gen
       - name: Generate VK API SDK code
         shell: bash
-        run: chmod +x go-vkapi-gen && ./go-vkapi-gen
+        run: mv go-vkapi-gen/go-vkapi-gen . && chmod +x go-vkapi-gen && ./go-vkapi-gen
 
 
