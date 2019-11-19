@@ -48,9 +48,9 @@ jobs:
     steps:
       - name: Checkout current branch
         uses: actions/checkout@v1
-      - name: Run further steps only on master
-        shell: bash
-        run:  if [[ `git branch | grep \* | awk '{print $2}'` != "master" ]]; then echo "NOT MASTER" && exit 1; fi
+#      - name: Run further steps only on master
+#        shell: bash
+#        run:  if [[ `git branch | grep \* | awk '{print $2}'` != "master" ]]; then echo "NOT MASTER" && exit 1; fi
 #      - name: Download built artefact
 #        uses: actions/download-artifact@v1
 #        with:
