@@ -43,8 +43,8 @@ jobs:
         run: mkdir -p output/objects && mkdir -p output/responses
       - name: Download built artefact
         uses: actions/download-artifact@v1
-          with:
-            name: go-vkapi-gen
+        with:
+          name: go-vkapi-gen
       - name: Generate VK API SDK code
         shell: bash
         run: chmod +x go-vkapi-gen && ./go-vkapi-gen
