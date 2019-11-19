@@ -1,0 +1,52 @@
+name: Build and run dummy test
+
+on: [push]
+
+jobs:
+  build:
+    name: Build and Run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v1
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          - go-version: 1.13.3
+      - name: Build GO VKAPI Generator binary
+        run: go build -o go-vkapi-gen
+      - name: Upload artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: go-vkapi-gen
+          path: ./go-vkapi-gen
+
+  test:
+    name: Run tests
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download built artefact
+        uses: actions/download-artifact@v1
+        with:
+          name: go-vkapi-gen
+      - name: Run dummy test
+        shell: bash
+        run: ./go-vkapi-gen && cd output && go build || exit 1
+  deploy:
+    name: Deploy resulting code to the destination repo
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup directories
+        shell: bash
+        run: mkdir -p output/objects && mkdir -p output/responses
+      - name: Download built artefact
+        uses: actions/download-artifact@v1
+          with:
+            name: go-vkapi-gen
+      - name: Generate VK API SDK code
+        shell: bash
+        run: chmod +x go-vkapi-gen && ./go-vkapi-gen
+
+
