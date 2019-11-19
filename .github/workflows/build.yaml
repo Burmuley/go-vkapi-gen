@@ -33,7 +33,7 @@ jobs:
           path: go-vkapi-gen-artifact
       - name: Run dummy test
         shell: bash
-        run: mv go-vkapi-gen-artifact/go-vkapi-gen . && chmod +x go-vkapi-gen && ./go-vkapi-gen && cd output && go build || exit 1
+        run: mv go-vkapi-gen-artifact/go-vkapi-gen . && ls -l && chmod +x go-vkapi-gen && ./go-vkapi-gen && cd output && go build || exit 1
   deploy:
     name: Deploy resulting code to the destination repo
     needs: build
