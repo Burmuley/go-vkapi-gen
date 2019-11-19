@@ -30,23 +30,24 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: go-vkapi-gen
+          path: go-vkapi-gen-artifact
       - name: Run dummy test
         shell: bash
-        run: mv go-vkapi-gen/go-vkapi-gen ./go-vkapi-gen-bin && chmod +x go-vkapi-gen-bin && ./go-vkapi-gen-bin && cd output && go build || exit 1
+        run: mv go-vkapi-gen-artifact/go-vkapi-gen . && chmod +x go-vkapi-gen && ./go-vkapi-gen && cd output && go build || exit 1
   deploy:
     name: Deploy resulting code to the destination repo
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Setup directories
-        shell: bash
-        run: mkdir -p output/objects && mkdir -p output/responses
+      - name: Checkout current branch
+        uses: actions/checkout@v1
       - name: Download built artefact
         uses: actions/download-artifact@v1
         with:
           name: go-vkapi-gen
+          path: go-vkapi-gen-artifact
       - name: Generate VK API SDK code
         shell: bash
-        run: mv go-vkapi-gen/go-vkapi-gen ./go-vkapi-gen-bin && chmod +x go-vkapi-gen-bin && ./go-vkapi-gen
+        run: mv go-vkapi-gen-artifact/go-vkapi-gen . && chmod +x go-vkapi-gen && ./go-vkapi-gen
 
 
