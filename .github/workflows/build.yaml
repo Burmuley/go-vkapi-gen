@@ -28,7 +28,7 @@ jobs:
     steps:
       - name: Checkout current branch
         uses: actions/checkout@v1
-      - name: Download built artefact
+      - name: Download built artifact
         uses: actions/download-artifact@v1
         with:
           name: go-vkapi-gen
@@ -36,7 +36,7 @@ jobs:
       - name: Run dummy test
         shell: bash
         run: mv go-vkapi-gen-artifact/go-vkapi-gen . && ls -l && chmod +x go-vkapi-gen && ./go-vkapi-gen && cd output && go build || exit 1
-      - name: Upload outputs artefact
+      - name: Upload outputs artifact
         uses: actions/upload-artifact@v1
         with:
           name: go-vkapi-gen-output
@@ -59,8 +59,8 @@ jobs:
 #      - name: Generate VK API SDK code
 #        shell: bash
 #        run: mv go-vkapi-gen-artifact/go-vkapi-gen . && chmod +x go-vkapi-gen && ./go-vkapi-gen
-      - name: Download output artefact
-        uses: actions/download-artefact@v1
+      - name: Download output artifact
+        uses: actions/download-artifact@v1
         with:
           name: go-vkapi-gen-output
           path: ./
