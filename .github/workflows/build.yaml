@@ -36,6 +36,11 @@ jobs:
       - name: Run dummy test
         shell: bash
         run: mv go-vkapi-gen-artifact/go-vkapi-gen . && ls -l && chmod +x go-vkapi-gen && ./go-vkapi-gen && cd output && go build || exit 1
+      - name: Upload outputs artefact
+        uses: actions/upload-artifact@v1
+        with:
+          name: go-vkapi-gen-output
+          path: output/
   deploy:
     name: Deploy resulting code to the destination repo
     needs: build
@@ -43,13 +48,24 @@ jobs:
     steps:
       - name: Checkout current branch
         uses: actions/checkout@v1
-      - name: Download built artefact
-        uses: actions/download-artifact@v1
-        with:
-          name: go-vkapi-gen
-          path: go-vkapi-gen-artifact
-      - name: Generate VK API SDK code
+      - name: Run further steps only on master
         shell: bash
-        run: mv go-vkapi-gen-artifact/go-vkapi-gen . && chmod +x go-vkapi-gen && ./go-vkapi-gen
+        run:  if [[ `git branch | grep \* | awk '{print $2}'` != "master" ]]; then echo "NOT MASTER" && exit 1; fi
+#      - name: Download built artefact
+#        uses: actions/download-artifact@v1
+#        with:
+#          name: go-vkapi-gen
+#          path: go-vkapi-gen-artifact
+#      - name: Generate VK API SDK code
+#        shell: bash
+#        run: mv go-vkapi-gen-artifact/go-vkapi-gen . && chmod +x go-vkapi-gen && ./go-vkapi-gen
+      - name: Download output artefact
+        uses: actions/download-artefact@v1
+        with:
+          name: go-vkapi-gen-output
+          path: ./
+      - name: List dir contents
+        shell: bash
+        run: ls -lR
 
 
