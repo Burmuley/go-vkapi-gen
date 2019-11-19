@@ -26,6 +26,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v1
       - name: Download built artefact
         uses: actions/download-artifact@v1
         with:
