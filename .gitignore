@@ -1,5 +1,3 @@
-output/**.go
-output/*.md
-output/go.mod
-output/*/*.go
+output/**
 .idea/
+go-vkapi-gen
