@@ -1,6 +1,6 @@
 # VK API Golang SDK Generator
 
-## *! WARNING ! WORK IN PROGRESS !*
+## ! WARNING ! WORK IN PROGRESS !
 
 *Reviews appreciated!* Just create an issue with your review/question/request.
 
