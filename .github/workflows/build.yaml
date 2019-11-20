@@ -44,7 +44,7 @@ jobs:
 #          path: output
   deploy:
     name: Deploy resulting code to the destination repo
-    needs: build
+    needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     steps:
