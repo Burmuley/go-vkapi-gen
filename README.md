@@ -1,8 +1,8 @@
 # VK API Golang SDK Generator
 
-## **! WARNING ! WORK IN PROGRESS !**
+## ! WARNING ! WORK IN PROGRESS !
 
-** Reviews appreciated! **
+*Reviews appreciated!* Just create an issue with your review/question/request.
 
 Tool to generate Golang (Go) SDK code for VK API implementation based on public JSON schema.
 

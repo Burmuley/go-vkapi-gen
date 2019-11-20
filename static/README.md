@@ -1,8 +1,8 @@
 # VK (Vkontakte) API SDK for Golang
 
-** Reviews appreciated! **
+*Reviews appreciated!* Just create an issue with your review/question/request in [GO VKAPI Generator](https://github.com/Burmuley/go-vkapi-gen) repository.
 
-This repo contains [Golang](https://www.golang.org) Software Development Kit for the [VK](https://vk.com/) using public API of this social network. 
+This repo contains [Golang](https://www.golang.org) Software Development Kit (SDK) for the [VK](https://vk.com/) using public API of this social network. 
 
 All platform objects and methods were implemented according to the public [JSON schema](https://github.com/VKCOM/vk-api-schema/) in official VK repository.
 
