@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -e
-set -x
 
 which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
 
@@ -33,7 +32,6 @@ ls -la
 # add all files to a new branch and commit it to repo
 git status
 git add --all
-git status -s
 CHANGED=$(git status -s | wc -l)
 echo CHANGED=$CHANGED
 if [[ $CHANGED != 0 ]]; then

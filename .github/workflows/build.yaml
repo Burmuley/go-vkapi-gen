@@ -46,7 +46,7 @@ jobs:
     name: Deploy resulting code to the destination repo
     needs: test
     runs-on: ubuntu-latest
-#    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout current branch
         uses: actions/checkout@v1
