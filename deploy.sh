@@ -26,14 +26,16 @@ git checkout -b "$br_name" || exit 1
 find . -type f -not -path "./.git/*" -exec rm -f '{}' \; || exit 1
 # include hidden files and directories
 shopt -s dotglob
-cp -Rfp ../output/* ./ || exit 1
-ls -l
+cp -aRfp ../output/* ./ || exit 1
+ls -la
 
 # add all files to a new branch and commit it to repo
 git status
-CHANGED=$(git diff | wc -l | tr -d " ")
+git add --all
+CHANGED=$(git status -s | wc -l)
+echo CHANGED=$CHANGED
 if [[ $CHANGED != 0 ]]; then
-  git add --all || exit 1
+  git add . --all || exit 1
   git status
   git commit -m "Auto-generated VK API SDK build. $(date)" || exit 1
   git push -u origin "$br_name" || exit 1
@@ -41,3 +43,4 @@ else
   echo "No changes in destination code."
 fi
 echo "DONE"
+
