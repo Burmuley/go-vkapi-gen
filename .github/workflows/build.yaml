@@ -50,13 +50,13 @@ jobs:
       - name: Checkout current branch
 #        if: github.ref == 'refs/heads/master'
         uses: actions/checkout@v1
-      - name: Checkout GO VKAPI repository
-#        if: github.ref == 'refs/heads/master'
-        uses: actions/checkout@v1
-        with:
-          repository: Burmuley/go-vkapi
-          ref: master
-          token: ${{ secrets.GOVKAPI_TOKEN }}
+#      - name: Checkout GO VKAPI repository
+##        if: github.ref == 'refs/heads/master'
+#        uses: actions/checkout@v1
+#        with:
+#          repository: Burmuley/go-vkapi
+#          ref: master
+#          token: ${{ secrets.GOVKAPI_TOKEN }}
       - name: Download built artefact
 #        if: github.ref == 'refs/heads/master'
         uses: actions/download-artifact@v1
