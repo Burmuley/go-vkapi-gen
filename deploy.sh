@@ -24,7 +24,7 @@ git checkout -b "$br_name" || exit 1
 
 # copy generated output to the target repo dir
 find . -type f -not -path "./.git/*" -exec rm -f '{}' \; || exit 1
-cp -Rfp ../output/* ./ || exit 1
+cp -Rfp ../output/ ./ || exit 1
 ls -l
 
 # add all files to a new branch and commit it to repo
