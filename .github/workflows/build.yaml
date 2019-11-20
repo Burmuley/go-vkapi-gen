@@ -46,6 +46,7 @@ jobs:
     name: Deploy resulting code to the destination repo
     needs: build
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout current branch
         uses: actions/checkout@v1
@@ -54,10 +55,7 @@ jobs:
         with:
           repository: Burmuley/go-vkapi
           ref: master
-          token: ${{ secrets.GITHUB_TOKEN }}
-#      - name: Run further steps only on master
-#        shell: bash
-#        run:  if [[ `git branch | grep \* | awk '{print $2}'` != "master" ]]; then echo "NOT MASTER" && exit 1; fi
+          token: ${{ secrets.GOVKAPI_TOKEN }}
       - name: Download built artefact
         uses: actions/download-artifact@v1
         with:
