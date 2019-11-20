@@ -48,23 +48,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout current branch
-        if: github.ref == 'refs/heads/master'
+#        if: github.ref == 'refs/heads/master'
         uses: actions/checkout@v1
       - name: Checkout GO VKAPI repository
-        if: github.ref == 'refs/heads/master'
+#        if: github.ref == 'refs/heads/master'
         uses: actions/checkout@v1
         with:
           repository: Burmuley/go-vkapi
           ref: master
           token: ${{ secrets.GOVKAPI_TOKEN }}
       - name: Download built artefact
-        if: github.ref == 'refs/heads/master'
+#        if: github.ref == 'refs/heads/master'
         uses: actions/download-artifact@v1
         with:
           name: go-vkapi-gen
           path: go-vkapi-gen-artifact
       - name: Generate VK API SDK code
-        if: github.ref == 'refs/heads/master'
+#        if: github.ref == 'refs/heads/master'
         shell: bash
         run: mv go-vkapi-gen-artifact/go-vkapi-gen . && chmod +x go-vkapi-gen && ./go-vkapi-gen
 # This download doesn't work because of some weird `download-artifact` plugin bug
