@@ -15,8 +15,8 @@ GOVKAPI_REPO_DIR=$(echo $GOVKAPI_SSH_REPO_URL | awk -F "\/" '{print $2}' | cut -
 cd "$GOVKAPI_REPO_DIR" || exit 1
 
 git checkout master || exit 1
-git config --global user.email "cicd-go-vkapi-gen@gitlab.com"
-git config --global user.name "CIDI GO VK API Generator"
+git config --global user.email "cicd-go-vkapi-gen@github.com"
+git config --global user.name "GitHub Actions GO VK API Generator"
 
 # create a new branch named (HOW??)
 br_name=$(date +"generated-%m-%d-%Y-%H-%M-%S")
