@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
+set -x
 
 which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
 
