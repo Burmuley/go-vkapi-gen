@@ -1,0 +1,19 @@
+name: Create new pull request
+
+on:
+  create:
+    branches:
+      - '**generated**'
+
+jobs:
+  pullrequest:
+    name: Kick on a new PR for auto-generated changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: repo-sync/pull-request@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_title: Auto-generated VK API SDK build from ${{ github.ref }}
+          pr_body: "Pulling changes from branch ${{ github.ref }}"
+          pr_assignee: "Burmuley"
