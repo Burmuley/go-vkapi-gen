@@ -1,0 +1,76 @@
+name: Build/Test/Deploy
+
+on: [push]
+
+jobs:
+  build:
+    name: Build and Run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v1
+      - name: Setup Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13.3
+      - name: Build GO VKAPI Generator binary
+        run: go build -o go-vkapi-gen
+      - name: Upload artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: go-vkapi-gen
+          path: ./go-vkapi-gen
+
+  test:
+    name: Run tests
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v1
+      - name: Download built artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: go-vkapi-gen
+          path: go-vkapi-gen-artifact
+      - name: Run dummy test
+        shell: bash
+        run: mv go-vkapi-gen-artifact/go-vkapi-gen . && ls -l && chmod +x go-vkapi-gen && ./go-vkapi-gen && cd output && go build || exit 1
+# This upload can't be downloaded in further stespbecause of some weird `download-artifact` plugin bug
+#      - name: Upload outputs artifact
+#        uses: actions/upload-artifact@v1
+#        with:
+#          name: go-vkapi-gen-output
+#          path: output
+  deploy:
+    name: Deploy resulting code to the destination repo
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v1
+      - name: Download built artefact
+        uses: actions/download-artifact@v1
+        with:
+          name: go-vkapi-gen
+          path: go-vkapi-gen-artifact
+      - name: Generate VK API SDK code
+        shell: bash
+        run: mv go-vkapi-gen-artifact/go-vkapi-gen . && chmod +x go-vkapi-gen && ./go-vkapi-gen
+# This download doesn't work because of some weird `download-artifact` plugin bug
+#      - name: Download output artifact
+#        uses: actions/download-artifact@v1
+#        with:
+#          name: go-vkapi-gen-output
+#          path: .
+      - name: List dir contents
+        shell: bash
+        run: ls -lR
+      - name: Deploy produced code
+        shell: bash
+        env:
+          GOVKAPI_SSH_PRIVATE_KEY: ${{ secrets.GOVKAPI_KEY }}
+          GOVKAPI_SSH_REPO_URL: git@github.com:Burmuley/go-vkapi.git
+        run: chmod +x deploy.sh && ./deploy.sh
+

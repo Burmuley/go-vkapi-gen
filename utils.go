@@ -306,12 +306,14 @@ func checkTImports(item schemaJSONProperty, prefix string) bool {
 	return false
 }
 
+// checkNames: compares two type names
 func checkNames(tName, btName string) bool {
 	btName = strings.Trim(btName, "[]()")
 
 	return tName == btName
 }
 
+// checkChars: checks if a string contains a character
 func checkChars(s string, chars string) bool {
 	return strings.Count(s, chars) > 0
 }
