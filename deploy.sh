@@ -30,7 +30,7 @@ ls -l
 # add all files to a new branch and commit it to repo
 git status
 CHANGED=$(git diff | wc -l | tr -d " ")
-if [[ $CHANGED == 0 ]]; then
+if [[ $CHANGED != 0 ]]; then
   git add --all || exit 1
   git status
   git commit -m "Auto-generated VK API SDK build. $(date)" || exit 1
