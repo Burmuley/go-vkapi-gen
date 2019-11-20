@@ -32,7 +32,8 @@ ls -la
 
 # add all files to a new branch and commit it to repo
 git status
-CHANGED=$(git diff | wc -l | tr -d " ")
+git add --all
+CHANGED=$(git status -s | wc -l)
 echo CHANGED=$CHANGED
 if [[ $CHANGED != 0 ]]; then
   git add . --all || exit 1
@@ -43,3 +44,4 @@ else
   echo "No changes in destination code."
 fi
 echo "DONE"
+
