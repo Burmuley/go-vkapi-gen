@@ -40,7 +40,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: go-vkapi-gen-output
-          path: output/
+          path: output
   deploy:
     name: Deploy resulting code to the destination repo
     needs: build
