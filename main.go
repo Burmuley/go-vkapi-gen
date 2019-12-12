@@ -43,6 +43,11 @@ var (
 
 	// copy objects container to render `allOf` and `oneOf` properties in responses
 	objectsGlobal *objectsSchema
+
+	outputDirs = []string{
+		fmt.Sprintf("%s/objects", outputDirName),
+		fmt.Sprintf("%s/responses", outputDirName),
+	}
 )
 
 // readEnvVariables: Read environment variables to override defaults
@@ -69,6 +74,10 @@ func printEnvInfo() {
 func main() {
 	readEnvVariables()
 	printEnvInfo()
+	if err := makeDirs(outputDirs); err != nil {
+		logError(err)
+		os.Exit(1)
+	}
 
 	if err := copyStatic(outputDirName); err != nil {
 		logError(err)

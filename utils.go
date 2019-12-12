@@ -467,3 +467,15 @@ func setAddPrefix(j *schemaJSONProperty, val string) {
 	}
 
 }
+
+func makeDirs(dirs []string) error {
+	logStep("Checking/creating output directories.")
+	for _, dir := range dirs {
+		logInfo(fmt.Sprintf("Checking/creating '%s'", dir))
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
