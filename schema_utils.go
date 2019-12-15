@@ -13,6 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+// Set of functions for processing schema data
+
 package main
 
 import (
@@ -26,6 +29,10 @@ import (
 	"text/template"
 )
 
+// bufWriter: reads from two channels `bCh` (body channel) and `hCh` (header channel)
+// and writes contents to a file named `prefix`.go in directory `outDir`.
+// After `bCh` is closed it awaits for a header contents from `hCh` and concats it with
+// the body generated before. After this everything is dumped to the file.
 func bufWriter(wg *sync.WaitGroup, bCh, hCh chan []byte, prefix, outDir string) {
 	var (
 		f          *os.File
@@ -92,6 +99,9 @@ func bufWriter(wg *sync.WaitGroup, bCh, hCh chan []byte, prefix, outDir string) 
 
 }
 
+
+// generateItems: walks againt `items` and runs rendering of each item
+// sending rendered contents to an appropriate channel
 func generateItems(items IIterator, hTmpl, bTmpl *template.Template, outDir string, prefixes map[string]struct{}, imports map[string]map[string]struct{}) {
 	bodyChans := createByteChannels(prefixes)
 	headChans := createByteChannels(prefixes)
@@ -128,6 +138,7 @@ func generateItems(items IIterator, hTmpl, bTmpl *template.Template, outDir stri
 	wg.Wait()
 }
 
+// set of functions to check `IType` for belonging to a particular type
 func IsString(t IType) bool {
 	return t.GetType() == schemaTypeString
 }
@@ -164,6 +175,7 @@ func IsMultiple(t IType) bool {
 	return t.GetType() == schemaTypeMultiple
 }
 
+// fullFuncs: returns a map of functions to be passed to a text template renderer
 func fillFuncs(m map[string]interface{}) map[string]interface{} {
 	m["IsString"] = IsString
 	m["IsInt"] = IsInt
