@@ -23,6 +23,8 @@ import (
 	"text/template"
 )
 
+// Represents root structure of JSON schema document for responses
+// Implements interfaces: IGenerator, IIterator
 type responsesSchema struct {
 	keys        []string
 	keyIndex    int

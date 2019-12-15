@@ -22,6 +22,8 @@ import (
     "text/template"
 )
 
+// Represents root structure of JSON schema document for methods
+// Implements interfaces: IGenerator, IIterator
 type schemaMethods struct {
     keys        []string
     keyIndex    int

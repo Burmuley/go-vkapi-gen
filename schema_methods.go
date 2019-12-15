@@ -27,7 +27,7 @@ type schemaApiError struct {
     Descr string `json:"description"`
 }
 
-// Represents root JSON schema document structure for methods
+// Represents method JSON schema data structure for methods
 // Implements interfaces: IRender, IMethod
 type schemaMethod struct {
     Name         string              `json:"name"`
