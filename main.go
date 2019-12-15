@@ -22,18 +22,20 @@ import (
 )
 
 type step struct {
-	msg   string
-	fName string
-	sObj  IGenerator
+	msg   string // Step message to print in log
+	fName string // key name to find schema file name
+	sObj  IGenerator // IGenerator object to process
 }
 
 var (
+    // vkSchemaFiles - map of strings to define schema files paths
 	vkSchemaFiles = map[string]string{
 		"VK_API_SCHEMA_OBJECTS":   "https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/objects.json",
 		"VK_API_SCHEMA_METHODS":   "https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/methods.json",
 		"VK_API_SCHEMA_RESPONSES": "https://raw.githubusercontent.com/VKCOM/vk-api-schema/master/responses.json",
 	}
 
+	// vkSteps - list of steps to perform to generate resulting VK SDK code
 	vkSteps = []step{
 		// responses depends on objects
 		{"Generating VK API objects", "VK_API_SCHEMA_OBJECTS", &objectsSchema{}},
@@ -44,13 +46,14 @@ var (
 	// copy objects container to render `allOf` and `oneOf` properties in responses
 	objectsGlobal *objectsSchema
 
+	// hash of output directories names
 	outputDirs = []string{
 		fmt.Sprintf("%s/objects", outputDirName),
 		fmt.Sprintf("%s/responses", outputDirName),
 	}
 )
 
-// readEnvVariables: Read environment variables to override defaults
+// readEnvVariables: Read environment variables and override defaults if found
 func readEnvVariables() {
 	for k := range vkSchemaFiles {
 		if tmp := os.Getenv(k); tmp != "" {
@@ -63,6 +66,7 @@ func readEnvVariables() {
 	}
 }
 
+// printEnvInfo: print runtime environment information
 func printEnvInfo() {
 	logInfo("Running with the following configuration parameters:")
 
@@ -74,11 +78,14 @@ func printEnvInfo() {
 func main() {
 	readEnvVariables()
 	printEnvInfo()
+
+	// check and create output directories
 	if err := makeDirs(outputDirs); err != nil {
 		logError(err)
 		os.Exit(1)
 	}
 
+	// copy static code to the output directory
 	if err := copyStatic(outputDirName); err != nil {
 		logError(err)
 		os.Exit(1)
@@ -86,6 +93,7 @@ func main() {
 		logInfo("static content copied successfully")
 	}
 
+	// walk through steps and run parse&generate methods
 	for _, v := range vkSteps {
 		logStep(v.msg)
 

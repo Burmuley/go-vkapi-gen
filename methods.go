@@ -16,133 +16,135 @@ limitations under the License.
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"path"
-	"text/template"
+    "encoding/json"
+    "fmt"
+    "path"
+    "text/template"
 )
 
+// Represents root structure of JSON schema document for methods
+// Implements interfaces: IGenerator, IIterator
 type schemaMethods struct {
-	keys        []string
-	keyIndex    int
-	initialized bool
-	imports     map[string]map[string]struct{}
-	Errors      []schemaApiError `json:"errors"`
-	Methods     []schemaMethod   `json:"methods"`
+    keys        []string
+    keyIndex    int
+    initialized bool
+    imports     map[string]map[string]struct{}
+    Errors      []schemaApiError `json:"errors"`
+    Methods     []schemaMethod   `json:"methods"`
 }
 
 func (s *schemaMethods) Next() (IRender, bool) {
-	if !s.initialized {
-		s.keyIndex = 0
-		s.initialized = true
-	}
+    if !s.initialized {
+        s.keyIndex = 0
+        s.initialized = true
+    }
 
-	if s.keyIndex < len(s.keys) {
-		item := s.getItem()
-		s.keyIndex++
-		return item, true
-	}
+    if s.keyIndex < len(s.keys) {
+        item := s.getItem()
+        s.keyIndex++
+        return item, true
+    }
 
-	return nil, false
+    return nil, false
 }
 
 func (s *schemaMethods) GetKey() string {
-	return s.keys[s.keyIndex-1]
+    return s.keys[s.keyIndex-1]
 }
 
 func (s *schemaMethods) getItem() IRender {
-	od := schemaMethod{}
-	od = s.Methods[s.keyIndex]
+    od := schemaMethod{}
+    od = s.Methods[s.keyIndex]
 
-	return &od
+    return &od
 }
 
 func (s *schemaMethods) Parse(fPath string) error {
-	methods, err := loadSchemaFile(fPath)
+    methods, err := loadSchemaFile(fPath)
 
-	if err != nil {
-		return fmt.Errorf("schema load error: %s", err)
-	}
+    if err != nil {
+        return fmt.Errorf("schema load error: %s", err)
+    }
 
-	if err := json.Unmarshal(methods, s); err != nil {
-		return fmt.Errorf("JSON Error: %s", err)
-	}
+    if err := json.Unmarshal(methods, s); err != nil {
+        return fmt.Errorf("JSON Error: %s", err)
+    }
 
-	s.imports = make(map[string]map[string]struct{})
+    s.imports = make(map[string]map[string]struct{})
 
-	for k := range s.Methods {
-		s.keys = append(s.keys, s.Methods[k].GetName())
-		mPref := getApiNamePrefix(s.Methods[k].GetName())
+    for k := range s.Methods {
+        s.keys = append(s.keys, s.Methods[k].GetName())
+        mPref := getApiNamePrefix(s.Methods[k].GetName())
 
-		// Inspect parameters and fill imports
-		if checkMImports(s.Methods[k].GetParameters(), "objects.") {
-			//s.imports[mPref][objectsImportPath] = struct{}{}
-			addImport(s.imports, mPref, objectsImportPath)
-		}
+        // Inspect parameters and fill imports
+        if checkMImports(s.Methods[k].GetParameters(), "objects.") {
+            //s.imports[mPref][objectsImportPath] = struct{}{}
+            addImport(s.imports, mPref, objectsImportPath)
+        }
 
-		if checkMImports(s.Methods[k].GetParameters(), "json.Number") {
-			//s.imports[mPref]["encoding/json"] = struct{}{}
-			addImport(s.imports, mPref, "encoding/json")
-		}
+        if checkMImports(s.Methods[k].GetParameters(), "json.Number") {
+            //s.imports[mPref]["encoding/json"] = struct{}{}
+            addImport(s.imports, mPref, "encoding/json")
+        }
 
-		// Inspect responses and fill imports
-		if checkMImports(s.Methods[k].GetResponses(), "responses.") {
-			//s.imports[mPref][responsesImportPath] = struct{}{}
-			addImport(s.imports, mPref, responsesImportPath)
-		}
+        // Inspect responses and fill imports
+        if checkMImports(s.Methods[k].GetResponses(), "responses.") {
+            //s.imports[mPref][responsesImportPath] = struct{}{}
+            addImport(s.imports, mPref, responsesImportPath)
+        }
 
-		if checkMImports(s.Methods[k].GetResponses(), "objects.") {
-			//s.imports[mPref][objectsImportPath] = struct{}{}
-			addImport(s.imports, mPref, objectsImportPath)
-		}
-	}
+        if checkMImports(s.Methods[k].GetResponses(), "objects.") {
+            //s.imports[mPref][objectsImportPath] = struct{}{}
+            addImport(s.imports, mPref, objectsImportPath)
+        }
+    }
 
-	return nil
+    return nil
 }
 
 func (s *schemaMethods) Generate(outputDir string) error {
-	tmplFuncs := make(map[string]interface{})
-	tmplFuncs = fillFuncs(tmplFuncs)
-	tmplFuncs["convertParam"] = convertParam
-	tmplFuncs["getMNameSuffix"] = getApiMethodNameSuffix
-	tmplFuncs["getMNamePrefix"] = getApiNamePrefix
-	tmplFuncs["cutSuffix"] = cutSuffix
-	tmplFuncs["deco"] = func(method IMethod, count int) struct {
-		M IMethod
-		C int
-	} {
-		return struct {
-			M IMethod
-			C int
-		}{M: method, C: count}
-	}
-	tmplFuncs["getFLetter"] = func(s string) string {
-		return string(s[0])
-	}
+    tmplFuncs := make(map[string]interface{})
+    tmplFuncs = fillFuncs(tmplFuncs)
+    tmplFuncs["convertParam"] = convertParam
+    tmplFuncs["getMNameSuffix"] = getApiMethodNameSuffix
+    tmplFuncs["getMNamePrefix"] = getApiNamePrefix
+    tmplFuncs["cutSuffix"] = cutSuffix
+    tmplFuncs["deco"] = func(method IMethod, count int) struct {
+        M IMethod
+        C int
+    } {
+        return struct {
+            M IMethod
+            C int
+        }{M: method, C: count}
+    }
+    tmplFuncs["getFLetter"] = func(s string) string {
+        return string(s[0])
+    }
 
-	_, tmplName := path.Split(methodsTmplName)
+    _, tmplName := path.Split(methodsTmplName)
 
-	tmpl, err := template.New(tmplName).Funcs(tmplFuncs).ParseFiles(methodsTmplName)
+    tmpl, err := template.New(tmplName).Funcs(tmplFuncs).ParseFiles(methodsTmplName)
 
-	if err != nil {
-		return err
-	}
+    if err != nil {
+        return err
+    }
 
-	_, hTmplName := path.Split(methodsHeaderTmplName)
+    _, hTmplName := path.Split(methodsHeaderTmplName)
 
-	hTmpl, err := template.New(hTmplName).Funcs(tmplFuncs).ParseFiles(methodsHeaderTmplName)
+    hTmpl, err := template.New(hTmplName).Funcs(tmplFuncs).ParseFiles(methodsHeaderTmplName)
 
-	if err != nil {
-		return err
-	}
+    if err != nil {
+        return err
+    }
 
-	prefixes := map[string]struct{}{}
+    prefixes := map[string]struct{}{}
 
-	for _, v := range s.Methods {
-		prefixes[getApiNamePrefix(v.GetName())] = struct{}{}
-	}
+    for _, v := range s.Methods {
+        prefixes[getApiNamePrefix(v.GetName())] = struct{}{}
+    }
 
-	generateItems(s, hTmpl, tmpl, "/", prefixes, s.imports)
+    generateItems(s, hTmpl, tmpl, "/", prefixes, s.imports)
 
-	return nil
+    return nil
 }

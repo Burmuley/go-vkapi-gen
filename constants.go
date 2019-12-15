@@ -21,11 +21,9 @@ var (
 
 // Output directories and paths to templates
 const (
-	respDirName        = "responses"
 	respHeaderTmplName = "templates/responses.header.template"
 	respTmplName       = "templates/responses.template"
 
-	objDirName        = "objects"
 	objHeaderTmplName = "templates/objects.header.template"
 	objTmplName       = "templates/objects.template"
 

@@ -42,11 +42,13 @@ func convertName(jsonName string) string {
 	return strings.Join(nameArr, "")
 }
 
+// nameFRef: gets `object` or `response` name from full `builtin` name (`Ref` field)
 func nameFRef(ref string) string {
 	str := strings.Split(ref, "/")
 	return str[len(str)-1]
 }
 
+// cutSuffix: cuts `suf` from the end of `str`
 func cutSuffix(str, suf string) string {
 	// don't cut "Response" suffix if it's from objects package
 	if strings.Count(str, "objects.") > 0 && suf == "Response" {
@@ -56,10 +58,7 @@ func cutSuffix(str, suf string) string {
 	return strings.TrimSuffix(str, suf)
 }
 
-//func cutPrefix(str, pref string) string {
-//	return strings.TrimPrefix(str, pref)
-//}
-
+// convertParam converts parameter name to Go struct field name (capitalized)
 func convertParam(param string) string {
 	nameArr := strings.Split(param, "_")
 
@@ -75,6 +74,7 @@ func convertParam(param string) string {
 
 	return strings.Join(nameArr, "")
 }
+
 
 func getApiNamePrefix(name string) string {
 	var sep string
@@ -92,7 +92,7 @@ func getApiMethodNameSuffix(name string) string {
 	return strings.Split(name, ".")[1]
 }
 
-// readHTTPSchemaFile: reads VK API schema file from HTTP URL and saves it locally in the working directory
+// readHTTPSchemaFile: reads VK API schema file from HTTP URL and returns it contents
 func readHTTPSchemaFile(fileUrl string) ([]byte, error) {
 	logInfo(fmt.Sprintf("Downloading schema file from '%s'", fileUrl))
 	var schemaFile []byte
@@ -117,11 +117,13 @@ func readHTTPSchemaFile(fileUrl string) ([]byte, error) {
 	return schemaFile, nil
 }
 
+// readHTTPSchemaFile: reads VK API schema file from local filesystem and returns it contents
 func readLocalSchemaFile(filePath string) ([]byte, error) {
 	logInfo(fmt.Sprintf("Loading schema file from '%s'", filePath))
 	return ioutil.ReadFile(filePath)
 }
 
+// loadSchemaFile: wrapper function to load schema file from any source (HTTP and local file supported for now)
 func loadSchemaFile(path string) ([]byte, error) {
 	if path[:4] != "http" {
 		return readLocalSchemaFile(path)
@@ -130,6 +132,7 @@ func loadSchemaFile(path string) ([]byte, error) {
 	return readHTTPSchemaFile(path)
 }
 
+// getObjectTypeName: get lats part of `Ref` fields value
 func getObjectTypeName(s string) string {
 	var prefix string
 
@@ -148,23 +151,30 @@ func getObjectTypeName(s string) string {
 	return strings.Join([]string{prefix, convertName(str[len(str)-1])}, ".")
 }
 
+//
 // Logging helpers
+//
+
 func logString(s string) {
 	log.Println(s)
 }
 
+// logError: put formatter error to the log adding [ERROR] prefix
 func logError(err error) {
 	logString(fmt.Sprintf("[ERROR] %#v\n", err))
 }
 
+// logInfo: put information string to the log adding [INFO] prefix
 func logInfo(s string) {
 	logString(fmt.Sprintf("[INFO] %s", s))
 }
 
+// logStep: put information about current step using `logInfo`
 func logStep(s string) {
 	logInfo(fmt.Sprintf("STEP - %s", s))
 }
 
+// checkFileExists: checks if file `f` exists on local filesystem
 func checkFileExists(f string) bool {
 	fInfo, _ := os.Stat(f)
 	return fInfo != nil
@@ -177,6 +187,7 @@ func copyStatic(outputDir string) error {
 	return copyDir(staticDir, outputDir)
 }
 
+// copyDir: copy directory contends from `src` to `dst`
 func copyDir(src string, dst string) error {
 	var (
 		err      error
@@ -213,6 +224,7 @@ func copyDir(src string, dst string) error {
 	return nil
 }
 
+// copyFile: copy file contents from ` src to `dst`
 func copyFile(src, dst string) error {
 	var (
 		err     error
@@ -243,6 +255,7 @@ func copyFile(src, dst string) error {
 	return os.Chmod(dst, srcInfo.Mode())
 }
 
+// detectGoType: return appropriate Go type for schema type
 func detectGoType(s string) string {
 	switch s {
 	case schemaTypeNumber:
@@ -260,6 +273,7 @@ func detectGoType(s string) string {
 	return s
 }
 
+// createByteChannels: create a map with channels for each item in the list (map keys)
 func createByteChannels(m map[string]struct{}) map[string]chan []byte {
 	chans := make(map[string]chan []byte, len(m))
 
@@ -270,6 +284,7 @@ func createByteChannels(m map[string]struct{}) map[string]chan []byte {
 	return chans
 }
 
+// checkMImports: check `IMethodItem` list for mentions Go type defined in `prefix`
 func checkMImports(items []IMethodItem, prefix string) bool {
 	for _, v := range items {
 		if IsNumber(v) {
@@ -284,6 +299,7 @@ func checkMImports(items []IMethodItem, prefix string) bool {
 	return false
 }
 
+// checkTImports: check `schemaJSONProperty` list for mentions of Go type defined in `prefix`
 func checkTImports(item schemaJSONProperty, prefix string) bool {
 	if IsBuiltin(item) && strings.Count(item.GetGoType(), prefix) > 0 {
 		return true
@@ -318,6 +334,7 @@ func checkChars(s string, chars string) bool {
 	return strings.Count(s, chars) > 0
 }
 
+// addImport: adds import name to an imports map of maps
 func addImport(m map[string]map[string]struct{}, p, i string) {
 	if m[p] == nil {
 		m[p] = make(map[string]struct{})
@@ -326,6 +343,7 @@ func addImport(m map[string]map[string]struct{}, p, i string) {
 	m[p][i] = struct{}{}
 }
 
+// fillMultitype: finds appropriate `Object` type for `Builtin` type and fills all Properties
 func fillMultitype(multi *schemaJSONProperty, objects *objectsSchema) error {
 	props := make(map[string]*schemaJSONProperty)
 
@@ -468,6 +486,7 @@ func setAddPrefix(j *schemaJSONProperty, val string) {
 
 }
 
+// makeDirs: create output directories structure according to provided dir names in `dirs` slice
 func makeDirs(dirs []string) error {
 	logStep("Checking/creating output directories.")
 	for _, dir := range dirs {
